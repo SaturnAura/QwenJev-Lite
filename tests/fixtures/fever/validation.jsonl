@@ -1,0 +1,3 @@
+{"id": 1, "label": "SUPPORTS", "claim": "The Eiffel Tower is in Paris."}
+{"id": 2, "label": "REFUTES", "claim": "The Eiffel Tower is in Berlin."}
+{"id": 3, "label": "NOT ENOUGH INFO", "claim": "The Eiffel Tower is the tallest building in Europe."}

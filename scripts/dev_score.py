@@ -1,0 +1,94 @@
+"""Score a readout checkpoint on a small dev slice, next to the pretrained readout.
+
+Used to pick hyper-parameters without paying for the full test every time:
+
+    python scripts/dev_score.py --checkpoint models/qwenjev-multitask-v2/readout.pt
+
+The slice covers all three question types plus the tasks that are known to be hard
+(the relevance yes/no judgements).
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+import torch
+from tqdm.auto import tqdm
+from transformers import AutoModelForImageTextToText, AutoTokenizer
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from qwenjev.backends import QwenBackend  # noqa: E402
+from qwenjev.config import QwenJevConfig  # noqa: E402
+from qwenjev.engine import QwenJevLite  # noqa: E402
+from qwenjev.evaluation import evaluate_items  # noqa: E402
+from qwenjev.normalize import load_normalized  # noqa: E402
+
+DEV_TASKS = (
+    "scifact_rel_bool",
+    "nfcorpus_rel_bool",
+    "arguana_rel_bool",
+    "jigsaw",
+    "goemotions",
+    "mnli",
+    "snli",
+    "scifact_rel_score",
+)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--data-dir", default="data/ready")
+    parser.add_argument("--model", default=r"C:\qwen3.5-4B")
+    parser.add_argument("--tasks", nargs="*", default=list(DEV_TASKS))
+    parser.add_argument("--limit", type=int, default=40)
+    parser.add_argument("--batch", type=int, default=16)
+    parser.add_argument("--quiet", action="store_true")
+    args = parser.parse_args()
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    model = AutoModelForImageTextToText.from_pretrained(
+        args.model, dtype=torch.bfloat16, device_map={"": "cuda:0"}
+    )
+    model.eval()
+    zero = QwenBackend(QwenJevLite(model, tokenizer, QwenJevConfig(readout="reserved_label")))
+    trained = QwenBackend(
+        QwenJevLite(
+            model,
+            tokenizer,
+            QwenJevConfig(readout="slot_head", readout_checkpoint=args.checkpoint),
+        )
+    )
+
+    rows = []
+    for task in tqdm(args.tasks, desc="dev slice", unit="task", disable=args.quiet):
+        items = load_normalized(Path(args.data_dir) / f"{task}_test.jsonl")
+        if args.limit and len(items) > args.limit:
+            stride = max(1, len(items) // args.limit)
+            items = items[::stride][: args.limit]
+        line = {"task": task}
+        for name, backend in (("zero", zero), ("trained", trained)):
+            summary = evaluate_items(
+                backend, items, dataset=task, batch_size=args.batch, progress=False
+            ).summary()
+            line[name] = summary["overall"]["accuracy"]
+            line[f"{name}_ece"] = summary["overall"]["ece"]
+        rows.append(line)
+
+    print(f"\n{'task':<22} {'zero':>7} {'trained':>8} {'delta':>7}")
+    for row in rows:
+        print(
+            f"{row['task']:<22} {row['zero']:>7.3f} {row['trained']:>8.3f} "
+            f"{row['trained']-row['zero']:>+7.3f}"
+        )
+    zero_mean = sum(r["zero"] for r in rows) / len(rows)
+    trained_mean = sum(r["trained"] for r in rows) / len(rows)
+    print(f"{'MEAN':<22} {zero_mean:>7.3f} {trained_mean:>8.3f} {trained_mean-zero_mean:>+7.3f}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

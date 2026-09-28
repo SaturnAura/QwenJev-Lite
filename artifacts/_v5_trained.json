@@ -1,0 +1,3517 @@
+{
+  "data_dir": "data\\ready",
+  "limit": 0,
+  "variants": [
+    "qwen_trained"
+  ],
+  "families": {
+    "arguana_rel_bool": "bool",
+    "arguana_rel_choice": "choice",
+    "arguana_rel_score": "score",
+    "banking77": "choice",
+    "banking77_top15": "choice",
+    "clinc150": "choice",
+    "clinc150_top15": "choice",
+    "fever": "choice",
+    "fever_support": "score",
+    "goemotions": "bool",
+    "goemotions_sentiment": "score",
+    "hwu64": "choice",
+    "hwu64_top15": "choice",
+    "intentgrasp": "choice",
+    "jigsaw": "bool",
+    "jigsaw_severity": "score",
+    "mmlu_pro": "choice",
+    "mnli": "choice",
+    "nfcorpus_rel_bool": "bool",
+    "nfcorpus_rel_choice": "choice",
+    "nfcorpus_rel_score": "score",
+    "scidocs_rel_bool": "bool",
+    "scidocs_rel_choice": "choice",
+    "scidocs_rel_score": "score",
+    "scifact_rel_bool": "bool",
+    "scifact_rel_choice": "choice",
+    "scifact_rel_score": "score",
+    "snli": "choice",
+    "trec-covid_rel_bool": "bool",
+    "trec-covid_rel_choice": "choice",
+    "trec-covid_rel_score": "score",
+    "truthfulqa": "choice",
+    "vihealthqa_rel_bool": "bool",
+    "vihealthqa_rel_choice": "choice",
+    "vihealthqa_rel_score": "score",
+    "mnli_ood": "choice"
+  },
+  "baselines": {
+    "arguana_rel_bool": {
+      "n": 300.0,
+      "majority_accuracy": 0.8,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "arguana_rel_choice": {
+      "n": 60.0,
+      "majority_accuracy": 0.36666666666666664,
+      "majority_balanced": 0.25,
+      "uniform_chance": 0.25
+    },
+    "arguana_rel_score": {
+      "n": 300.0,
+      "majority_accuracy": 0.8,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "banking77": {
+      "n": 400.0,
+      "majority_accuracy": 0.025,
+      "majority_balanced": 0.025000000000000185,
+      "uniform_chance": 0.025000000000000185
+    },
+    "banking77_top15": {
+      "n": 150.0,
+      "majority_accuracy": 0.06666666666666667,
+      "majority_balanced": 0.06666666666666655,
+      "uniform_chance": 0.06666666666666655
+    },
+    "clinc150": {
+      "n": 400.0,
+      "majority_accuracy": 0.0125,
+      "majority_balanced": 0.012500000000000093,
+      "uniform_chance": 0.012500000000000093
+    },
+    "clinc150_top15": {
+      "n": 75.0,
+      "majority_accuracy": 0.06666666666666667,
+      "majority_balanced": 0.0666666666666667,
+      "uniform_chance": 0.0666666666666667
+    },
+    "fever": {
+      "n": 400.0,
+      "majority_accuracy": 0.3525,
+      "majority_balanced": 0.33333333333333187,
+      "uniform_chance": 0.33333333333333187
+    },
+    "fever_support": {
+      "n": 400.0,
+      "majority_accuracy": 0.3525,
+      "majority_balanced": 0.33333333333333187,
+      "uniform_chance": 0.33333333333333187
+    },
+    "goemotions": {
+      "n": 11200.0,
+      "majority_accuracy": 0.958125,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "goemotions_sentiment": {
+      "n": 400.0,
+      "majority_accuracy": 0.4,
+      "majority_balanced": 0.33333333333333187,
+      "uniform_chance": 0.33333333333333187
+    },
+    "hwu64": {
+      "n": 400.0,
+      "majority_accuracy": 0.025,
+      "majority_balanced": 0.02380952380952374,
+      "uniform_chance": 0.02380952380952374
+    },
+    "hwu64_top15": {
+      "n": 150.0,
+      "majority_accuracy": 0.06666666666666667,
+      "majority_balanced": 0.06666666666666655,
+      "uniform_chance": 0.06666666666666655
+    },
+    "intentgrasp": {
+      "n": 400.0,
+      "majority_accuracy": 0.2125,
+      "majority_balanced": 0.10000000000000074,
+      "uniform_chance": 0.10000000000000074
+    },
+    "jigsaw": {
+      "n": 2400.0,
+      "majority_accuracy": 0.9620833333333333,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "jigsaw_severity": {
+      "n": 400.0,
+      "majority_accuracy": 0.905,
+      "majority_balanced": 0.33333333333333187,
+      "uniform_chance": 0.33333333333333187
+    },
+    "mmlu_pro": {
+      "n": 400.0,
+      "majority_accuracy": 0.1425,
+      "majority_balanced": 0.10000000000000074,
+      "uniform_chance": 0.10000000000000074
+    },
+    "mnli": {
+      "n": 1178.0,
+      "majority_accuracy": 0.36587436332767403,
+      "majority_balanced": 0.3333333333333292,
+      "uniform_chance": 0.3333333333333292
+    },
+    "nfcorpus_rel_bool": {
+      "n": 355.0,
+      "majority_accuracy": 0.676056338028169,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "nfcorpus_rel_choice": {
+      "n": 60.0,
+      "majority_accuracy": 0.2833333333333333,
+      "majority_balanced": 0.25,
+      "uniform_chance": 0.25
+    },
+    "nfcorpus_rel_score": {
+      "n": 355.0,
+      "majority_accuracy": 0.676056338028169,
+      "majority_balanced": 0.33333333333333165,
+      "uniform_chance": 0.33333333333333165
+    },
+    "scidocs_rel_bool": {
+      "n": 360.0,
+      "majority_accuracy": 0.6666666666666666,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "scidocs_rel_choice": {
+      "n": 60.0,
+      "majority_accuracy": 0.36666666666666664,
+      "majority_balanced": 0.25,
+      "uniform_chance": 0.25
+    },
+    "scidocs_rel_score": {
+      "n": 360.0,
+      "majority_accuracy": 0.6666666666666666,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "scifact_rel_bool": {
+      "n": 306.0,
+      "majority_accuracy": 0.7843137254901961,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "scifact_rel_choice": {
+      "n": 60.0,
+      "majority_accuracy": 0.38333333333333336,
+      "majority_balanced": 0.25,
+      "uniform_chance": 0.25
+    },
+    "scifact_rel_score": {
+      "n": 306.0,
+      "majority_accuracy": 0.7843137254901961,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "snli": {
+      "n": 1184.0,
+      "majority_accuracy": 0.38175675675675674,
+      "majority_balanced": 0.33333333333332915,
+      "uniform_chance": 0.33333333333332915
+    },
+    "trec-covid_rel_bool": {
+      "n": 300.0,
+      "majority_accuracy": 0.6666666666666666,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "trec-covid_rel_choice": {
+      "n": 50.0,
+      "majority_accuracy": 0.42,
+      "majority_balanced": 0.25,
+      "uniform_chance": 0.25
+    },
+    "trec-covid_rel_score": {
+      "n": 300.0,
+      "majority_accuracy": 0.6666666666666666,
+      "majority_balanced": 0.3333333333333322,
+      "uniform_chance": 0.3333333333333322
+    },
+    "truthfulqa": {
+      "n": 240.0,
+      "majority_accuracy": 0.2375,
+      "majority_balanced": 0.2000000000000006,
+      "uniform_chance": 0.2000000000000006
+    },
+    "vihealthqa_rel_bool": {
+      "n": 359.0,
+      "majority_accuracy": 0.6685236768802229,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "vihealthqa_rel_choice": {
+      "n": 60.0,
+      "majority_accuracy": 0.35,
+      "majority_balanced": 0.25,
+      "uniform_chance": 0.25
+    },
+    "vihealthqa_rel_score": {
+      "n": 359.0,
+      "majority_accuracy": 0.6685236768802229,
+      "majority_balanced": 0.5,
+      "uniform_chance": 0.5
+    },
+    "mnli_ood": {
+      "n": 1186.0,
+      "majority_accuracy": 0.3777403035413153,
+      "majority_balanced": 0.3333333333333291,
+      "uniform_chance": 0.3333333333333291
+    }
+  },
+  "results": {
+    "arguana_rel_bool": {
+      "qwen_trained": {
+        "dataset": "arguana_rel_bool",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 300,
+        "overall": {
+          "n": 300,
+          "accuracy": 0.7833333333333333,
+          "mean_top_probability": 0.6901609551906586,
+          "ece": 0.09559285283088687,
+          "wilson95": [
+            0.7332891734257104,
+            0.826212882908906
+          ],
+          "mean_probability_of_correct_answer": 0.6194757398714622,
+          "nll": 0.538915778755773,
+          "brier": 0.35534583454954705,
+          "balanced_accuracy": 0.5395833333333333
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.7166666666666667,
+            "mean_top_probability": 0.6807971676190694,
+            "ece": 0.10411684910456341,
+            "wilson95": [
+              0.5923247495026482,
+              0.8149332139569141
+            ],
+            "mean_probability_of_correct_answer": 0.6026053500672182,
+            "nll": 0.5707498440318061,
+            "brier": 0.38575526068711663,
+            "balanced_accuracy": 0.4791666666666667
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.8666666666666667,
+            "mean_top_probability": 0.6942843804756801,
+            "ece": 0.1723822861909867,
+            "wilson95": [
+              0.7583460540992789,
+              0.9308597302169036
+            ],
+            "mean_probability_of_correct_answer": 0.652655345449845,
+            "nll": 0.47019385373104705,
+            "brier": 0.2937658897717597,
+            "balanced_accuracy": 0.5525606469002695
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.75,
+            "mean_top_probability": 0.6860193719466527,
+            "ece": 0.07027161419391628,
+            "wilson95": [
+              0.6276768905451521,
+              0.8422361442158816
+            ],
+            "mean_probability_of_correct_answer": 0.6098802648484707,
+            "nll": 0.5561807837238276,
+            "brier": 0.3737301309931781,
+            "balanced_accuracy": 0.5139751552795031
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.8166666666666667,
+            "mean_top_probability": 0.7068575769662857,
+            "ece": 0.10980908970038096,
+            "wilson95": [
+              0.7008000677353371,
+              0.8944231096286387
+            ],
+            "mean_probability_of_correct_answer": 0.6554204379518827,
+            "nll": 0.46385064923869285,
+            "brier": 0.29113407499801386,
+            "balanced_accuracy": 0.57
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.7666666666666667,
+            "mean_top_probability": 0.682846278945605,
+            "ece": 0.1806677669286728,
+            "wilson95": [
+              0.6456348865960799,
+              0.8556056838156894
+            ],
+            "mean_probability_of_correct_answer": 0.5768173010398944,
+            "nll": 0.6336037630534911,
+            "brier": 0.4323438162976669,
+            "balanced_accuracy": 0.5882352941176471
+          }
+        },
+        "usage": {
+          "state_tokens": 17431,
+          "question_tokens": 39951,
+          "input_tokens": 57382,
+          "output_tokens": 5340,
+          "questions": 300,
+          "branches": 300,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 33597.5,
+          "total_ms": 33597.5,
+          "decisions_per_request": 5.0
+        },
+        "examples": []
+      }
+    },
+    "arguana_rel_choice": {
+      "qwen_trained": {
+        "dataset": "arguana_rel_choice",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 60,
+        "overall": {
+          "n": 60,
+          "accuracy": 0.9166666666666666,
+          "mean_top_probability": 0.8518825267752012,
+          "ece": 0.06478413989146552,
+          "wilson95": [
+            0.8193083153188752,
+            0.9638800759495141
+          ],
+          "mean_probability_of_correct_answer": 0.8303747236728668,
+          "nll": 0.23480832410901994,
+          "brier": 0.12690596835182413,
+          "balanced_accuracy": 0.8964285714285715
+        },
+        "by_question": {
+          "passage": {
+            "n": 60,
+            "accuracy": 0.9166666666666666,
+            "mean_top_probability": 0.8518825267752012,
+            "ece": 0.06478413989146552,
+            "wilson95": [
+              0.8193083153188752,
+              0.9638800759495141
+            ],
+            "mean_probability_of_correct_answer": 0.8303747236728668,
+            "nll": 0.23480832410901994,
+            "brier": 0.12690596835182413,
+            "balanced_accuracy": 0.8964285714285715
+          }
+        },
+        "usage": {
+          "state_tokens": 17431,
+          "question_tokens": 9221,
+          "input_tokens": 26652,
+          "output_tokens": 1260,
+          "questions": 60,
+          "branches": 60,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 8538.7,
+          "total_ms": 8538.7,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "arguana_rel_score": {
+      "qwen_trained": {
+        "dataset": "arguana_rel_score",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 300,
+        "overall": {
+          "n": 300,
+          "accuracy": 0.8166666666666667,
+          "mean_top_probability": 0.6839190654953321,
+          "ece": 0.13274760117133458,
+          "wilson95": [
+            0.7689704376794906,
+            0.85635538998861
+          ],
+          "mean_probability_of_correct_answer": 0.6414698095122973,
+          "nll": 0.4834295485608588,
+          "brier": 0.30624563998045545,
+          "balanced_accuracy": 0.8666666666666667
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.8333333333333334,
+            "mean_top_probability": 0.6897229825456938,
+            "ece": 0.16022324909766514,
+            "wilson95": [
+              0.7196814850279217,
+              0.9068692279867897
+            ],
+            "mean_probability_of_correct_answer": 0.6506554166475932,
+            "nll": 0.46851985163083343,
+            "brier": 0.28990045930335595,
+            "balanced_accuracy": 0.8958333333333333
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.7333333333333333,
+            "mean_top_probability": 0.6698221306006114,
+            "ece": 0.0675643523534139,
+            "wilson95": [
+              0.6099104639810865,
+              0.8286750351292115
+            ],
+            "mean_probability_of_correct_answer": 0.6006873284777006,
+            "nll": 0.5591863821988569,
+            "brier": 0.3741729344630797,
+            "balanced_accuracy": 0.7870619946091644
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.8666666666666667,
+            "mean_top_probability": 0.6986290911833445,
+            "ece": 0.16803757548332218,
+            "wilson95": [
+              0.7583460540992789,
+              0.9308597302169036
+            ],
+            "mean_probability_of_correct_answer": 0.6664301489790281,
+            "nll": 0.44032836223185073,
+            "brier": 0.26997659385716594,
+            "balanced_accuracy": 0.9130434782608696
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.8,
+            "mean_top_probability": 0.6804428458213806,
+            "ece": 0.11955715417861938,
+            "wilson95": [
+              0.6821795390818299,
+              0.8817161026314104
+            ],
+            "mean_probability_of_correct_answer": 0.6435874258478482,
+            "nll": 0.47633090521635224,
+            "brier": 0.30167281067264734,
+            "balanced_accuracy": 0.8400000000000001
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.85,
+            "mean_top_probability": 0.6809782773256302,
+            "ece": 0.16902172267436982,
+            "wilson95": [
+              0.7388517410884038,
+              0.9190265075770431
+            ],
+            "mean_probability_of_correct_answer": 0.6459887276093165,
+            "nll": 0.47278224152640025,
+            "brier": 0.2955054016060286,
+            "balanced_accuracy": 0.8775649794801641
+          }
+        },
+        "usage": {
+          "state_tokens": 17431,
+          "question_tokens": 42351,
+          "input_tokens": 59782,
+          "output_tokens": 5340,
+          "questions": 300,
+          "branches": 300,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 33862.0,
+          "total_ms": 33862.0,
+          "decisions_per_request": 5.0
+        },
+        "examples": []
+      }
+    },
+    "banking77": {
+      "qwen_trained": {
+        "dataset": "banking77",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.1825,
+          "mean_top_probability": 0.5720070696994662,
+          "ece": 0.38950706969946625,
+          "wilson95": [
+            0.14772676508161553,
+            0.2233137616991817
+          ],
+          "mean_probability_of_correct_answer": 0.13399364009325251,
+          "nll": 9.762792533862516,
+          "brier": 1.15011993107244,
+          "balanced_accuracy": 0.1825
+        },
+        "by_question": {
+          "intent": {
+            "n": 400,
+            "accuracy": 0.1825,
+            "mean_top_probability": 0.5720070696994662,
+            "ece": 0.38950706969946625,
+            "wilson95": [
+              0.14772676508161553,
+              0.2233137616991817
+            ],
+            "mean_probability_of_correct_answer": 0.13399364009325251,
+            "nll": 9.762792533862516,
+            "brier": 1.15011993107244,
+            "balanced_accuracy": 0.1825
+          }
+        },
+        "usage": {
+          "state_tokens": 8442,
+          "question_tokens": 206400,
+          "input_tokens": 214842,
+          "output_tokens": 8000,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 56391.5,
+          "total_ms": 56391.5,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "banking77_top15": {
+      "qwen_trained": {
+        "dataset": "banking77_top15",
+        "split": "test",
+        "n_items": 150,
+        "n_decisions": 150,
+        "overall": {
+          "n": 150,
+          "accuracy": 0.6266666666666667,
+          "mean_top_probability": 0.7287821232279141,
+          "ece": 0.13975778688987095,
+          "wilson95": [
+            0.5470043657114055,
+            0.7000029457050124
+          ],
+          "mean_probability_of_correct_answer": 0.5346769450597154,
+          "nll": 1.487146189066255,
+          "brier": 0.5376821588486617,
+          "balanced_accuracy": 0.6266666666666667
+        },
+        "by_question": {
+          "intent": {
+            "n": 150,
+            "accuracy": 0.6266666666666667,
+            "mean_top_probability": 0.7287821232279141,
+            "ece": 0.13975778688987095,
+            "wilson95": [
+              0.5470043657114055,
+              0.7000029457050124
+            ],
+            "mean_probability_of_correct_answer": 0.5346769450597154,
+            "nll": 1.487146189066255,
+            "brier": 0.5376821588486617,
+            "balanced_accuracy": 0.6266666666666667
+          }
+        },
+        "usage": {
+          "state_tokens": 3074,
+          "question_tokens": 18450,
+          "input_tokens": 21524,
+          "output_tokens": 3000,
+          "questions": 150,
+          "branches": 150,
+          "requests": 150,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 6304.1,
+          "total_ms": 6304.1,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "clinc150": {
+      "qwen_trained": {
+        "dataset": "clinc150",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.085,
+          "mean_top_probability": 0.6103303964436054,
+          "ece": 0.5253303964436055,
+          "wilson95": [
+            0.061462653163424086,
+            0.11643283853431088
+          ],
+          "mean_probability_of_correct_answer": 0.0661848028316841,
+          "nll": 12.063464195248548,
+          "brier": 1.3306684436716214,
+          "balanced_accuracy": 0.085
+        },
+        "by_question": {
+          "intent": {
+            "n": 400,
+            "accuracy": 0.085,
+            "mean_top_probability": 0.6103303964436054,
+            "ece": 0.5253303964436055,
+            "wilson95": [
+              0.061462653163424086,
+              0.11643283853431088
+            ],
+            "mean_probability_of_correct_answer": 0.0661848028316841,
+            "nll": 12.063464195248548,
+            "brier": 1.3306684436716214,
+            "balanced_accuracy": 0.085
+          }
+        },
+        "usage": {
+          "state_tokens": 7035,
+          "question_tokens": 314800,
+          "input_tokens": 321835,
+          "output_tokens": 8000,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 78985.3,
+          "total_ms": 78985.3,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "clinc150_top15": {
+      "qwen_trained": {
+        "dataset": "clinc150_top15",
+        "split": "test",
+        "n_items": 75,
+        "n_decisions": 75,
+        "overall": {
+          "n": 75,
+          "accuracy": 0.9066666666666666,
+          "mean_top_probability": 0.7432807906468709,
+          "ece": 0.16338587601979573,
+          "wilson95": [
+            0.819651161993122,
+            0.9540520606710551
+          ],
+          "mean_probability_of_correct_answer": 0.7219604596743981,
+          "nll": 0.47994594457235557,
+          "brier": 0.19587010703854096,
+          "balanced_accuracy": 0.9066666666666666
+        },
+        "by_question": {
+          "intent": {
+            "n": 75,
+            "accuracy": 0.9066666666666666,
+            "mean_top_probability": 0.7432807906468709,
+            "ece": 0.16338587601979573,
+            "wilson95": [
+              0.819651161993122,
+              0.9540520606710551
+            ],
+            "mean_probability_of_correct_answer": 0.7219604596743981,
+            "nll": 0.47994594457235557,
+            "brier": 0.19587010703854096,
+            "balanced_accuracy": 0.9066666666666666
+          }
+        },
+        "usage": {
+          "state_tokens": 1549,
+          "question_tokens": 7425,
+          "input_tokens": 8974,
+          "output_tokens": 1500,
+          "questions": 75,
+          "branches": 75,
+          "requests": 75,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 2820.9,
+          "total_ms": 2820.9,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "fever": {
+      "qwen_trained": {
+        "dataset": "fever",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.415,
+          "mean_top_probability": 0.8627997675538063,
+          "ece": 0.4477997675538063,
+          "wilson95": [
+            0.36774522964195816,
+            0.46387191925998755
+          ],
+          "mean_probability_of_correct_answer": 0.42147142482121125,
+          "nll": 1.841964274996006,
+          "brier": 0.9469222731599309,
+          "balanced_accuracy": 0.4342127354314845
+        },
+        "by_question": {
+          "verdict": {
+            "n": 400,
+            "accuracy": 0.415,
+            "mean_top_probability": 0.8627997675538063,
+            "ece": 0.4477997675538063,
+            "wilson95": [
+              0.36774522964195816,
+              0.46387191925998755
+            ],
+            "mean_probability_of_correct_answer": 0.42147142482121125,
+            "nll": 1.841964274996006,
+            "brier": 0.9469222731599309,
+            "balanced_accuracy": 0.4342127354314845
+          }
+        },
+        "usage": {
+          "state_tokens": 8452,
+          "question_tokens": 30335,
+          "input_tokens": 38787,
+          "output_tokens": 8400,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 12617.8,
+          "total_ms": 12617.8,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "fever_support": {
+      "qwen_trained": {
+        "dataset": "fever_support",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.5375,
+          "mean_top_probability": 0.7340846376866103,
+          "ece": 0.19658463768661022,
+          "wilson95": [
+            0.4885129330720267,
+            0.5857736188829973
+          ],
+          "mean_probability_of_correct_answer": 0.4896190628351178,
+          "nll": 1.1335734026437578,
+          "brier": 0.6527698699545655,
+          "balanced_accuracy": 0.5426299303668881
+        },
+        "by_question": {
+          "truth": {
+            "n": 400,
+            "accuracy": 0.5375,
+            "mean_top_probability": 0.7340846376866103,
+            "ece": 0.19658463768661022,
+            "wilson95": [
+              0.4885129330720267,
+              0.5857736188829973
+            ],
+            "mean_probability_of_correct_answer": 0.4896190628351178,
+            "nll": 1.1335734026437578,
+            "brier": 0.6527698699545655,
+            "balanced_accuracy": 0.5426299303668881
+          }
+        },
+        "usage": {
+          "state_tokens": 8452,
+          "question_tokens": 17200,
+          "input_tokens": 25652,
+          "output_tokens": 8000,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 10203.5,
+          "total_ms": 10203.5,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "goemotions": {
+      "qwen_trained": {
+        "dataset": "goemotions",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 11200,
+        "overall": {
+          "n": 11200,
+          "accuracy": 0.8622321428571429,
+          "mean_top_probability": 0.8838003837104355,
+          "ece": 0.031052427568605916,
+          "wilson95": [
+            0.8557247042182128,
+            0.868491175449347
+          ],
+          "mean_probability_of_correct_answer": 0.8178828645255583,
+          "nll": 0.3027968426609427,
+          "brier": 0.19229317363355147,
+          "balanced_accuracy": 0.6875025209429508
+        },
+        "by_question": {
+          "admiration": {
+            "n": 400,
+            "accuracy": 0.8525,
+            "mean_top_probability": 0.8777878549695015,
+            "ece": 0.0323867303133011,
+            "wilson95": [
+              0.8143991454822668,
+              0.8838944428949584
+            ],
+            "mean_probability_of_correct_answer": 0.798802480539307,
+            "nll": 0.350789543973025,
+            "brier": 0.21777773297332387,
+            "balanced_accuracy": 0.8198748043818467
+          },
+          "amusement": {
+            "n": 400,
+            "accuracy": 0.85,
+            "mean_top_probability": 0.8461944733560085,
+            "ece": 0.03258431270718573,
+            "wilson95": [
+              0.8116856255682138,
+              0.8816555260120097
+            ],
+            "mean_probability_of_correct_answer": 0.7935648059844971,
+            "nll": 0.3020799469649937,
+            "brier": 0.19274827870849998,
+            "balanced_accuracy": 0.793939393939394
+          },
+          "anger": {
+            "n": 400,
+            "accuracy": 0.8975,
+            "mean_top_probability": 0.914735171943903,
+            "ece": 0.030874626189470265,
+            "wilson95": [
+              0.8638958898314886,
+              0.9235415608917652
+            ],
+            "mean_probability_of_correct_answer": 0.8631235587247648,
+            "nll": 0.23225224919839577,
+            "brier": 0.14393263021947786,
+            "balanced_accuracy": 0.7369791666666667
+          },
+          "annoyance": {
+            "n": 400,
+            "accuracy": 0.74,
+            "mean_top_probability": 0.8219803513586521,
+            "ece": 0.10267095729708671,
+            "wilson95": [
+              0.694874880703965,
+              0.7805590518081883
+            ],
+            "mean_probability_of_correct_answer": 0.7072504845820368,
+            "nll": 0.479892572190381,
+            "brier": 0.33502798310427623,
+            "balanced_accuracy": 0.780369922855284
+          },
+          "approval": {
+            "n": 400,
+            "accuracy": 0.6725,
+            "mean_top_probability": 0.8368150275945664,
+            "ece": 0.16431502759456634,
+            "wilson95": [
+              0.6250574069613036,
+              0.7166607320318065
+            ],
+            "mean_probability_of_correct_answer": 0.649218873642385,
+            "nll": 0.6715281123162617,
+            "brier": 0.464234918839861,
+            "balanced_accuracy": 0.5698653198653199
+          },
+          "caring": {
+            "n": 400,
+            "accuracy": 0.8125,
+            "mean_top_probability": 0.8408299849927425,
+            "ece": 0.048841450363397626,
+            "wilson95": [
+              0.7713431632142457,
+              0.847711436410954
+            ],
+            "mean_probability_of_correct_answer": 0.7569288983009755,
+            "nll": 0.3948608668320431,
+            "brier": 0.2561497062621878,
+            "balanced_accuracy": 0.623954925481643
+          },
+          "confusion": {
+            "n": 400,
+            "accuracy": 0.915,
+            "mean_top_probability": 0.905489940494299,
+            "ece": 0.038692859858274455,
+            "wilson95": [
+              0.8835671614656891,
+              0.938537346836576
+            ],
+            "mean_probability_of_correct_answer": 0.8722759725432843,
+            "nll": 0.1864066434011349,
+            "brier": 0.11178983157487327,
+            "balanced_accuracy": 0.7354522084599205
+          },
+          "curiosity": {
+            "n": 400,
+            "accuracy": 0.9025,
+            "mean_top_probability": 0.8841644506156444,
+            "ece": 0.04265177205204962,
+            "wilson95": [
+              0.8694870411682052,
+              0.9278552831490519
+            ],
+            "mean_probability_of_correct_answer": 0.8486927993688732,
+            "nll": 0.2180871440175916,
+            "brier": 0.13164217107801257,
+            "balanced_accuracy": 0.7921099290780141
+          },
+          "desire": {
+            "n": 400,
+            "accuracy": 0.7375,
+            "mean_top_probability": 0.7795023114979267,
+            "ece": 0.06992106571793558,
+            "wilson95": [
+              0.69226759360591,
+              0.7782139021092418
+            ],
+            "mean_probability_of_correct_answer": 0.6655519624240697,
+            "nll": 0.5326919101038224,
+            "brier": 0.36112871755623227,
+            "balanced_accuracy": 0.8048469387755102
+          },
+          "disappointment": {
+            "n": 400,
+            "accuracy": 0.81,
+            "mean_top_probability": 0.8527604341506958,
+            "ece": 0.06618968367576605,
+            "wilson95": [
+              0.7686754184345865,
+              0.8454267443936117
+            ],
+            "mean_probability_of_correct_answer": 0.7769685338065028,
+            "nll": 0.352242718733734,
+            "brier": 0.23750355240825527,
+            "balanced_accuracy": 0.6581632653061225
+          },
+          "disapproval": {
+            "n": 400,
+            "accuracy": 0.7,
+            "mean_top_probability": 0.8233746902644634,
+            "ece": 0.12337469026446342,
+            "wilson95": [
+              0.6533618692890616,
+              0.7428330744710662
+            ],
+            "mean_probability_of_correct_answer": 0.6809471689490602,
+            "nll": 0.5613094960322369,
+            "brier": 0.38961687603583306,
+            "balanced_accuracy": 0.6785273549979433
+          },
+          "disgust": {
+            "n": 400,
+            "accuracy": 0.895,
+            "mean_top_probability": 0.8856206008791924,
+            "ece": 0.018442992269992808,
+            "wilson95": [
+              0.861108321155689,
+              0.9213766927705632
+            ],
+            "mean_probability_of_correct_answer": 0.8409641094598919,
+            "nll": 0.24213993140459625,
+            "brier": 0.14909881009122286,
+            "balanced_accuracy": 0.807920059215396
+          },
+          "embarrassment": {
+            "n": 400,
+            "accuracy": 0.965,
+            "mean_top_probability": 0.9260056275129318,
+            "ece": 0.042043716013431556,
+            "wilson95": [
+              0.942114344143788,
+              0.9790389000985089
+            ],
+            "mean_probability_of_correct_answer": 0.9088064062781632,
+            "nll": 0.12301770474673294,
+            "brier": 0.061152030281419564,
+            "balanced_accuracy": 0.4849246231155779
+          },
+          "excitement": {
+            "n": 400,
+            "accuracy": 0.855,
+            "mean_top_probability": 0.9058622390031814,
+            "ece": 0.07090662360191345,
+            "wilson95": [
+              0.8171160037000451,
+              0.8861300214741816
+            ],
+            "mean_probability_of_correct_answer": 0.8288049289840274,
+            "nll": 0.30355140732951674,
+            "brier": 0.19833589462492968,
+            "balanced_accuracy": 0.7046038794110774
+          },
+          "fear": {
+            "n": 400,
+            "accuracy": 0.975,
+            "mean_top_probability": 0.9373607955873012,
+            "ece": 0.05039434745907785,
+            "wilson95": [
+              0.9545979351700657,
+              0.9863650562602375
+            ],
+            "mean_probability_of_correct_answer": 0.9285202958434821,
+            "nll": 0.09041717413754488,
+            "brier": 0.042361377858769,
+            "balanced_accuracy": 0.9052453468697124
+          },
+          "gratitude": {
+            "n": 400,
+            "accuracy": 0.9575,
+            "mean_top_probability": 0.9403309805691242,
+            "ece": 0.04156888619065284,
+            "wilson95": [
+              0.9329974034029175,
+              0.9732985304483749
+            ],
+            "mean_probability_of_correct_answer": 0.9169207846466452,
+            "nll": 0.12471931885074258,
+            "brier": 0.07027697472742438,
+            "balanced_accuracy": 0.906578947368421
+          },
+          "grief": {
+            "n": 400,
+            "accuracy": 0.97,
+            "mean_top_probability": 0.9347833690047264,
+            "ece": 0.03554054319858549,
+            "wilson95": [
+              0.9483009668703324,
+              0.9827571509659678
+            ],
+            "mean_probability_of_correct_answer": 0.9232883673161268,
+            "nll": 0.09882441715509618,
+            "brier": 0.04897153662616477,
+            "balanced_accuracy": 0.9849624060150376
+          },
+          "joy": {
+            "n": 400,
+            "accuracy": 0.855,
+            "mean_top_probability": 0.9092262931168079,
+            "ece": 0.06467931136488919,
+            "wilson95": [
+              0.8171160037000451,
+              0.8861300214741816
+            ],
+            "mean_probability_of_correct_answer": 0.8267351335007698,
+            "nll": 0.3133409826750288,
+            "brier": 0.21066823975839238,
+            "balanced_accuracy": 0.7004329004329004
+          },
+          "love": {
+            "n": 400,
+            "accuracy": 0.955,
+            "mean_top_probability": 0.9506594853103161,
+            "ece": 0.03818529561161998,
+            "wilson95": [
+              0.929994720438381,
+              0.9713487766159096
+            ],
+            "mean_probability_of_correct_answer": 0.9284471221547573,
+            "nll": 0.11278376273304655,
+            "brier": 0.059721255739821594,
+            "balanced_accuracy": 0.8268229166666667
+          },
+          "nervousness": {
+            "n": 400,
+            "accuracy": 0.97,
+            "mean_top_probability": 0.9342978274822236,
+            "ece": 0.035702172517776444,
+            "wilson95": [
+              0.9483009668703324,
+              0.9827571509659678
+            ],
+            "mean_probability_of_correct_answer": 0.9233685744926333,
+            "nll": 0.09891718193984525,
+            "brier": 0.0491068911420623,
+            "balanced_accuracy": 0.9849246231155779
+          },
+          "optimism": {
+            "n": 400,
+            "accuracy": 0.8075,
+            "mean_top_probability": 0.8715699057281018,
+            "ece": 0.07325713530182835,
+            "wilson95": [
+              0.766010151768214,
+              0.8431395742629825
+            ],
+            "mean_probability_of_correct_answer": 0.7834823334915564,
+            "nll": 0.3688712965687841,
+            "brier": 0.24436145129591355,
+            "balanced_accuracy": 0.581588132635253
+          },
+          "pride": {
+            "n": 400,
+            "accuracy": 0.8975,
+            "mean_top_probability": 0.8901816940307617,
+            "ece": 0.026824750304222156,
+            "wilson95": [
+              0.8638958898314886,
+              0.9235415608917652
+            ],
+            "mean_probability_of_correct_answer": 0.8451682563405484,
+            "nll": 0.23594097246515008,
+            "brier": 0.14374407597361438,
+            "balanced_accuracy": 0.449874686716792
+          },
+          "realization": {
+            "n": 400,
+            "accuracy": 0.7425,
+            "mean_top_probability": 0.7538695257902145,
+            "ece": 0.0293494215607643,
+            "wilson95": [
+              0.6974839488186009,
+              0.7829024204905541
+            ],
+            "mean_probability_of_correct_answer": 0.6680958694964647,
+            "nll": 0.4958741271731948,
+            "brier": 0.3319504123073467,
+            "balanced_accuracy": 0.6025940640336527
+          },
+          "relief": {
+            "n": 400,
+            "accuracy": 0.9225,
+            "mean_top_probability": 0.8843808308243751,
+            "ece": 0.05335722148418431,
+            "wilson95": [
+              0.8920944082797374,
+              0.9448674104135325
+            ],
+            "mean_probability_of_correct_answer": 0.8544321830570698,
+            "nll": 0.20078831454618273,
+            "brier": 0.11570618439666568,
+            "balanced_accuracy": 0.9611528822055138
+          },
+          "remorse": {
+            "n": 400,
+            "accuracy": 0.9825,
+            "mean_top_probability": 0.9550346498191357,
+            "ece": 0.03248998090624813,
+            "wilson95": [
+              0.9643224844820973,
+              0.9914978173392109
+            ],
+            "mean_probability_of_correct_answer": 0.9477864622324705,
+            "nll": 0.06538654086480739,
+            "brier": 0.026731938950627247,
+            "balanced_accuracy": 0.7936708860759494
+          },
+          "sadness": {
+            "n": 400,
+            "accuracy": 0.945,
+            "mean_top_probability": 0.9331367087364196,
+            "ece": 0.03383218348026268,
+            "wilson95": [
+              0.9181319717303434,
+              0.9634017781359406
+            ],
+            "mean_probability_of_correct_answer": 0.9057304733153433,
+            "nll": 0.14230332798592898,
+            "brier": 0.08110162337155209,
+            "balanced_accuracy": 0.8112554112554112
+          },
+          "surprise": {
+            "n": 400,
+            "accuracy": 0.85,
+            "mean_top_probability": 0.8466902785003185,
+            "ece": 0.04700238719582558,
+            "wilson95": [
+              0.8116856255682138,
+              0.8816555260120097
+            ],
+            "mean_probability_of_correct_answer": 0.7829109094897285,
+            "nll": 0.33259224874987425,
+            "brier": 0.21161940691055922,
+            "balanced_accuracy": 0.8010204081632653
+          },
+          "neutral": {
+            "n": 400,
+            "accuracy": 0.7075,
+            "mean_top_probability": 0.9037652407586575,
+            "ece": 0.19626524075865745,
+            "wilson95": [
+              0.6611135422327317,
+              0.7499387119184009
+            ],
+            "mean_probability_of_correct_answer": 0.6739324577501975,
+            "nll": 0.8467016814167033,
+            "brier": 0.4977483589220968,
+            "balanced_accuracy": 0.4913194444444444
+          }
+        },
+        "usage": {
+          "state_tokens": 10106,
+          "question_tokens": 381600,
+          "input_tokens": 391706,
+          "output_tokens": 192000,
+          "questions": 11200,
+          "branches": 11200,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 184010.7,
+          "total_ms": 184010.7,
+          "decisions_per_request": 28.0
+        },
+        "examples": []
+      }
+    },
+    "goemotions_sentiment": {
+      "qwen_trained": {
+        "dataset": "goemotions_sentiment",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.5725,
+          "mean_top_probability": 0.7467853942513466,
+          "ece": 0.1742853942513466,
+          "wilson95": [
+            0.5235544015629189,
+            0.6200662655501273
+          ],
+          "mean_probability_of_correct_answer": 0.5185781656485051,
+          "nll": 1.1093117714453036,
+          "brier": 0.6048894626320717,
+          "balanced_accuracy": 0.5779100529100529
+        },
+        "by_question": {
+          "sentiment": {
+            "n": 400,
+            "accuracy": 0.5725,
+            "mean_top_probability": 0.7467853942513466,
+            "ece": 0.1742853942513466,
+            "wilson95": [
+              0.5235544015629189,
+              0.6200662655501273
+            ],
+            "mean_probability_of_correct_answer": 0.5185781656485051,
+            "nll": 1.1093117714453036,
+            "brier": 0.6048894626320717,
+            "balanced_accuracy": 0.5779100529100529
+          }
+        },
+        "usage": {
+          "state_tokens": 10106,
+          "question_tokens": 16800,
+          "input_tokens": 26906,
+          "output_tokens": 8400,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 11195.8,
+          "total_ms": 11195.8,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "hwu64": {
+      "qwen_trained": {
+        "dataset": "hwu64",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.2775,
+          "mean_top_probability": 0.6859754151105881,
+          "ece": 0.4161359912157059,
+          "wilson95": [
+            0.23589351571381517,
+            0.3233396093530428
+          ],
+          "mean_probability_of_correct_answer": 0.22795327221920403,
+          "nll": 6.584948276445755,
+          "brier": 1.080499427159508,
+          "balanced_accuracy": 0.2750000000000001
+        },
+        "by_question": {
+          "intent": {
+            "n": 400,
+            "accuracy": 0.2775,
+            "mean_top_probability": 0.6859754151105881,
+            "ece": 0.4161359912157059,
+            "wilson95": [
+              0.23589351571381517,
+              0.3233396093530428
+            ],
+            "mean_probability_of_correct_answer": 0.22795327221920403,
+            "nll": 6.584948276445755,
+            "brier": 1.080499427159508,
+            "balanced_accuracy": 0.2750000000000001
+          }
+        },
+        "usage": {
+          "state_tokens": 6400,
+          "question_tokens": 153200,
+          "input_tokens": 159600,
+          "output_tokens": 8000,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 39940.8,
+          "total_ms": 39940.8,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "hwu64_top15": {
+      "qwen_trained": {
+        "dataset": "hwu64_top15",
+        "split": "test",
+        "n_items": 150,
+        "n_decisions": 150,
+        "overall": {
+          "n": 150,
+          "accuracy": 0.6733333333333333,
+          "mean_top_probability": 0.6778942152857781,
+          "ece": 0.12809050887823104,
+          "wilson95": [
+            0.5947670390048972,
+            0.7432429660912535
+          ],
+          "mean_probability_of_correct_answer": 0.5523726088815784,
+          "nll": 1.3785007063788448,
+          "brier": 0.461022423092748,
+          "balanced_accuracy": 0.6733333333333332
+        },
+        "by_question": {
+          "intent": {
+            "n": 150,
+            "accuracy": 0.6733333333333333,
+            "mean_top_probability": 0.6778942152857781,
+            "ece": 0.12809050887823104,
+            "wilson95": [
+              0.5947670390048972,
+              0.7432429660912535
+            ],
+            "mean_probability_of_correct_answer": 0.5523726088815784,
+            "nll": 1.3785007063788448,
+            "brier": 0.461022423092748,
+            "balanced_accuracy": 0.6733333333333332
+          }
+        },
+        "usage": {
+          "state_tokens": 2414,
+          "question_tokens": 16200,
+          "input_tokens": 18614,
+          "output_tokens": 3000,
+          "questions": 150,
+          "branches": 150,
+          "requests": 150,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 5832.3,
+          "total_ms": 5832.3,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "intentgrasp": {
+      "qwen_trained": {
+        "dataset": "intentgrasp",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.2725,
+          "mean_top_probability": 0.7432507422193885,
+          "ece": 0.4707507422193885,
+          "wilson95": [
+            0.23118418800549204,
+            0.3181440634673627
+          ],
+          "mean_probability_of_correct_answer": 0.2524726859183181,
+          "nll": 3.2429215482591656,
+          "brier": 1.141053434620399,
+          "balanced_accuracy": 0.29145372022621807
+        },
+        "by_question": {
+          "intent": {
+            "n": 400,
+            "accuracy": 0.2725,
+            "mean_top_probability": 0.7432507422193885,
+            "ece": 0.4707507422193885,
+            "wilson95": [
+              0.23118418800549204,
+              0.3181440634673627
+            ],
+            "mean_probability_of_correct_answer": 0.2524726859183181,
+            "nll": 3.2429215482591656,
+            "brier": 1.141053434620399,
+            "balanced_accuracy": 0.29145372022621807
+          }
+        },
+        "usage": {
+          "state_tokens": 59525,
+          "question_tokens": 49440,
+          "input_tokens": 108965,
+          "output_tokens": 8000,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 38601.3,
+          "total_ms": 38601.3,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "jigsaw": {
+      "qwen_trained": {
+        "dataset": "jigsaw",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 2400,
+        "overall": {
+          "n": 2400,
+          "accuracy": 0.9241666666666667,
+          "mean_top_probability": 0.9004784536361694,
+          "ece": 0.033890344550212184,
+          "wilson95": [
+            0.9128841254586739,
+            0.9340934790557003
+          ],
+          "mean_probability_of_correct_answer": 0.8705984482130347,
+          "nll": 0.1872389458406947,
+          "brier": 0.1085800807834936,
+          "balanced_accuracy": 0.8444738457731096
+        },
+        "by_question": {
+          "toxic": {
+            "n": 400,
+            "accuracy": 0.875,
+            "mean_top_probability": 0.8484371787309647,
+            "ece": 0.05974513858556753,
+            "wilson95": [
+              0.8389801748486139,
+              0.9038853447016257
+            ],
+            "mean_probability_of_correct_answer": 0.7986236521974206,
+            "nll": 0.2938469292026084,
+            "brier": 0.18053320502792,
+            "balanced_accuracy": 0.860279150915964
+          },
+          "severe_toxic": {
+            "n": 400,
+            "accuracy": 0.9025,
+            "mean_top_probability": 0.8892502476274967,
+            "ece": 0.026471611708402662,
+            "wilson95": [
+              0.8694870411682052,
+              0.9278552831490519
+            ],
+            "mean_probability_of_correct_answer": 0.8449029900878667,
+            "nll": 0.2364619963581339,
+            "brier": 0.14113280061568467,
+            "balanced_accuracy": 0.7022613065326633
+          },
+          "obscene": {
+            "n": 400,
+            "accuracy": 0.9675,
+            "mean_top_probability": 0.9599464173614979,
+            "ece": 0.01126601383090016,
+            "wilson95": [
+              0.9451953401262605,
+              0.9809103409130382
+            ],
+            "mean_probability_of_correct_answer": 0.9397614173172042,
+            "nll": 0.10839254863970944,
+            "brier": 0.05445804068434895,
+            "balanced_accuracy": 0.7678938708350473
+          },
+          "threat": {
+            "n": 400,
+            "accuracy": 0.9525,
+            "mean_top_probability": 0.9217708548903465,
+            "ece": 0.03344470351934436,
+            "wilson95": [
+              0.9270078923649577,
+              0.9693831678923314
+            ],
+            "mean_probability_of_correct_answer": 0.9041946691647172,
+            "nll": 0.12967299256336987,
+            "brier": 0.07203297596883598,
+            "balanced_accuracy": 0.9761306532663316
+          },
+          "insult": {
+            "n": 400,
+            "accuracy": 0.88,
+            "mean_top_probability": 0.8629353488981724,
+            "ece": 0.05758094713091852,
+            "wilson95": [
+              0.8444853274321313,
+              0.9082850657121113
+            ],
+            "mean_probability_of_correct_answer": 0.8233565782941877,
+            "nll": 0.2488587177186061,
+            "brier": 0.15576119218765694,
+            "balanced_accuracy": 0.8936988936988937
+          },
+          "identity_hate": {
+            "n": 400,
+            "accuracy": 0.9675,
+            "mean_top_probability": 0.9205306743085384,
+            "ece": 0.05163214549422264,
+            "wilson95": [
+              0.9451953401262605,
+              0.9809103409130382
+            ],
+            "mean_probability_of_correct_answer": 0.9127513822168112,
+            "nll": 0.10620049056174048,
+            "brier": 0.04756227021651413,
+            "balanced_accuracy": 0.4849624060150376
+          }
+        },
+        "usage": {
+          "state_tokens": 35381,
+          "question_tokens": 84800,
+          "input_tokens": 120181,
+          "output_tokens": 43200,
+          "questions": 2400,
+          "branches": 2400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 99326.7,
+          "total_ms": 99326.7,
+          "decisions_per_request": 6.0
+        },
+        "examples": []
+      }
+    },
+    "jigsaw_severity": {
+      "qwen_trained": {
+        "dataset": "jigsaw_severity",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.93,
+          "mean_top_probability": 0.9172693677991629,
+          "ece": 0.019850033596158008,
+          "wilson95": [
+            0.9006904336040151,
+            0.9511286954802596
+          ],
+          "mean_probability_of_correct_answer": 0.8883363294508309,
+          "nll": 0.17899034543637227,
+          "brier": 0.10348428135450125,
+          "balanced_accuracy": 0.5676795580110497
+        },
+        "by_question": {
+          "severity": {
+            "n": 400,
+            "accuracy": 0.93,
+            "mean_top_probability": 0.9172693677991629,
+            "ece": 0.019850033596158008,
+            "wilson95": [
+              0.9006904336040151,
+              0.9511286954802596
+            ],
+            "mean_probability_of_correct_answer": 0.8883363294508309,
+            "nll": 0.17899034543637227,
+            "brier": 0.10348428135450125,
+            "balanced_accuracy": 0.5676795580110497
+          }
+        },
+        "usage": {
+          "state_tokens": 35381,
+          "question_tokens": 16400,
+          "input_tokens": 51781,
+          "output_tokens": 8000,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 33162.6,
+          "total_ms": 33162.6,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "mmlu_pro": {
+      "qwen_trained": {
+        "dataset": "mmlu_pro",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 400,
+        "overall": {
+          "n": 400,
+          "accuracy": 0.405,
+          "mean_top_probability": 0.6748914417624473,
+          "ece": 0.26989144176244734,
+          "wilson95": [
+            0.35801711355168203,
+            0.45379028816225736
+          ],
+          "mean_probability_of_correct_answer": 0.3623016552264835,
+          "nll": 2.424904743518997,
+          "brier": 0.8460539175289761,
+          "balanced_accuracy": 0.40883564578921483
+        },
+        "by_question": {
+          "answer": {
+            "n": 400,
+            "accuracy": 0.405,
+            "mean_top_probability": 0.6748914417624473,
+            "ece": 0.26989144176244734,
+            "wilson95": [
+              0.35801711355168203,
+              0.45379028816225736
+            ],
+            "mean_probability_of_correct_answer": 0.3623016552264835,
+            "nll": 2.424904743518997,
+            "brier": 0.8460539175289761,
+            "balanced_accuracy": 0.40883564578921483
+          }
+        },
+        "usage": {
+          "state_tokens": 31954,
+          "question_tokens": 61756,
+          "input_tokens": 93710,
+          "output_tokens": 8000,
+          "questions": 400,
+          "branches": 400,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 39351.0,
+          "total_ms": 39351.0,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "mnli": {
+      "qwen_trained": {
+        "dataset": "mnli",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 1178,
+        "overall": {
+          "n": 1178,
+          "accuracy": 0.7962648556876061,
+          "mean_top_probability": 0.8149113947041775,
+          "ece": 0.018646539016571487,
+          "wilson95": [
+            0.7723181513812963,
+            0.8182855301949824
+          ],
+          "mean_probability_of_correct_answer": 0.7190967608045182,
+          "nll": 0.5763498216115313,
+          "brier": 0.3001913913558638,
+          "balanced_accuracy": 0.7922305649892817
+        },
+        "by_question": {
+          "h0": {
+            "n": 400,
+            "accuracy": 0.8025,
+            "mean_top_probability": 0.8170130303502083,
+            "ece": 0.022719213217496936,
+            "wilson95": [
+              0.7606869088608799,
+              0.8385579435763133
+            ],
+            "mean_probability_of_correct_answer": 0.7268401505524525,
+            "nll": 0.5407821359188396,
+            "brier": 0.28897815296973717,
+            "balanced_accuracy": 0.7988505747126436
+          },
+          "h1": {
+            "n": 399,
+            "accuracy": 0.7919799498746867,
+            "mean_top_probability": 0.8191138714327848,
+            "ece": 0.02895561189281013,
+            "wilson95": [
+              0.7494610744420461,
+              0.828930035115656
+            ],
+            "mean_probability_of_correct_answer": 0.7161010299554855,
+            "nll": 0.6072149773564743,
+            "brier": 0.3101620310397059,
+            "balanced_accuracy": 0.7785132309467158
+          },
+          "h2": {
+            "n": 379,
+            "accuracy": 0.7941952506596306,
+            "mean_top_probability": 0.8082690662790414,
+            "ece": 0.03517427568699879,
+            "wilson95": [
+              0.7506373165962756,
+              0.8318490171772746
+            ],
+            "mean_probability_of_correct_answer": 0.7140781347084505,
+            "nll": 0.5813943523103291,
+            "brier": 0.30152914892999966,
+            "balanced_accuracy": 0.7968216254269965
+          }
+        },
+        "usage": {
+          "state_tokens": 13243,
+          "question_tokens": 100487,
+          "input_tokens": 113730,
+          "output_tokens": 21626,
+          "questions": 1178,
+          "branches": 1178,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 45552.2,
+          "total_ms": 45552.2,
+          "decisions_per_request": 2.94
+        },
+        "examples": []
+      }
+    },
+    "nfcorpus_rel_bool": {
+      "qwen_trained": {
+        "dataset": "nfcorpus_rel_bool",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 355,
+        "overall": {
+          "n": 355,
+          "accuracy": 0.7295774647887324,
+          "mean_top_probability": 0.6527525873251364,
+          "ece": 0.07682487746359601,
+          "wilson95": [
+            0.6810959639196348,
+            0.7731434553673153
+          ],
+          "mean_probability_of_correct_answer": 0.5874755244439757,
+          "nll": 0.5742415531017628,
+          "brier": 0.38902255696583127,
+          "balanced_accuracy": 0.6618659420289855
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.7166666666666667,
+            "mean_top_probability": 0.6674533784389496,
+            "ece": 0.13449845512708025,
+            "wilson95": [
+              0.5923247495026482,
+              0.8149332139569141
+            ],
+            "mean_probability_of_correct_answer": 0.5778690949082375,
+            "nll": 0.6093587011232048,
+            "brier": 0.4196846093742165,
+            "balanced_accuracy": 0.6423444976076556
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.7,
+            "mean_top_probability": 0.6757050712903341,
+            "ece": 0.0902418871720632,
+            "wilson95": [
+              0.5749105303360957,
+              0.801019897472731
+            ],
+            "mean_probability_of_correct_answer": 0.598553042113781,
+            "nll": 0.5625650626438597,
+            "brier": 0.3816933339738175,
+            "balanced_accuracy": 0.5793650793650793
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.75,
+            "mean_top_probability": 0.6269589016834894,
+            "ece": 0.12304109831651058,
+            "wilson95": [
+              0.6276768905451521,
+              0.8422361442158816
+            ],
+            "mean_probability_of_correct_answer": 0.5875212694207828,
+            "nll": 0.5570140947140874,
+            "brier": 0.3720723797133349,
+            "balanced_accuracy": 0.6903409090909092
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.7333333333333333,
+            "mean_top_probability": 0.6525260657072067,
+            "ece": 0.10218767027060191,
+            "wilson95": [
+              0.6099104639810865,
+              0.8286750351292115
+            ],
+            "mean_probability_of_correct_answer": 0.6029011681675911,
+            "nll": 0.5405350962357391,
+            "brier": 0.3589052151584998,
+            "balanced_accuracy": 0.6666666666666667
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.7,
+            "mean_top_probability": 0.6330564697583516,
+            "ece": 0.1291373153527578,
+            "wilson95": [
+              0.5749105303360957,
+              0.801019897472731
+            ],
+            "mean_probability_of_correct_answer": 0.5569905743002892,
+            "nll": 0.6223042043632273,
+            "brier": 0.43286617234371233,
+            "balanced_accuracy": 0.6685714285714286
+          },
+          "d5": {
+            "n": 55,
+            "accuracy": 0.7818181818181819,
+            "mean_top_probability": 0.6615486415949735,
+            "ece": 0.12026954022320832,
+            "wilson95": [
+              0.6562971335952182,
+              0.8705410217234678
+            ],
+            "mean_probability_of_correct_answer": 0.6022491316903721,
+            "nll": 0.5518022146603403,
+            "brier": 0.367085547073733,
+            "balanced_accuracy": 0.7463450292397661
+          }
+        },
+        "usage": {
+          "state_tokens": 847,
+          "question_tokens": 50123,
+          "input_tokens": 50970,
+          "output_tokens": 6275,
+          "questions": 355,
+          "branches": 355,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 14991.1,
+          "total_ms": 14991.1,
+          "decisions_per_request": 5.92
+        },
+        "examples": []
+      }
+    },
+    "nfcorpus_rel_choice": {
+      "qwen_trained": {
+        "dataset": "nfcorpus_rel_choice",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 60,
+        "overall": {
+          "n": 60,
+          "accuracy": 0.5833333333333334,
+          "mean_top_probability": 0.7577058667937915,
+          "ece": 0.199670314292113,
+          "wilson95": [
+            0.45727854313239624,
+            0.6993591351212818
+          ],
+          "mean_probability_of_correct_answer": 0.5478842099430039,
+          "nll": 1.428389021627927,
+          "brier": 0.5822616551600516,
+          "balanced_accuracy": 0.5934436274509804
+        },
+        "by_question": {
+          "passage": {
+            "n": 60,
+            "accuracy": 0.5833333333333334,
+            "mean_top_probability": 0.7577058667937915,
+            "ece": 0.199670314292113,
+            "wilson95": [
+              0.45727854313239624,
+              0.6993591351212818
+            ],
+            "mean_probability_of_correct_answer": 0.5478842099430039,
+            "nll": 1.428389021627927,
+            "brier": 0.5822616551600516,
+            "balanced_accuracy": 0.5934436274509804
+          }
+        },
+        "usage": {
+          "state_tokens": 847,
+          "question_tokens": 10012,
+          "input_tokens": 10859,
+          "output_tokens": 1260,
+          "questions": 60,
+          "branches": 60,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 3290.3,
+          "total_ms": 3290.3,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "nfcorpus_rel_score": {
+      "qwen_trained": {
+        "dataset": "nfcorpus_rel_score",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 355,
+        "overall": {
+          "n": 355,
+          "accuracy": 0.6281690140845071,
+          "mean_top_probability": 0.7500892165681006,
+          "ece": 0.1219202024835936,
+          "wilson95": [
+            0.5767728076213351,
+            0.6768209786063487
+          ],
+          "mean_probability_of_correct_answer": 0.5768753190819194,
+          "nll": 1.0753224883906318,
+          "brier": 0.5104356843194698,
+          "balanced_accuracy": 0.45416666666666666
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.6166666666666667,
+            "mean_top_probability": 0.7596341778834661,
+            "ece": 0.17529364923636115,
+            "wilson95": [
+              0.4901736454040315,
+              0.7291191041511176
+            ],
+            "mean_probability_of_correct_answer": 0.5789668380981311,
+            "nll": 0.8727807014758249,
+            "brier": 0.5211757346829099,
+            "balanced_accuracy": 0.4114035087719299
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.6166666666666667,
+            "mean_top_probability": 0.7601311971743901,
+            "ece": 0.17383893231550854,
+            "wilson95": [
+              0.4901736454040315,
+              0.7291191041511176
+            ],
+            "mean_probability_of_correct_answer": 0.5713240217068233,
+            "nll": 1.1895905915027285,
+            "brier": 0.5349519567218066,
+            "balanced_accuracy": 0.42784992784992787
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.55,
+            "mean_top_probability": 0.7314892768859863,
+            "ece": 0.20523986220359802,
+            "wilson95": [
+              0.42491714548981496,
+              0.6690654614623918
+            ],
+            "mean_probability_of_correct_answer": 0.5491684944368899,
+            "nll": 1.110759524655586,
+            "brier": 0.5478835362444118,
+            "balanced_accuracy": 0.43030303030303035
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.6666666666666666,
+            "mean_top_probability": 0.7541565269231796,
+            "ece": 0.09941863914330804,
+            "wilson95": [
+              0.540566298666634,
+              0.7727090578407216
+            ],
+            "mean_probability_of_correct_answer": 0.5835265305344365,
+            "nll": 1.1336186390304372,
+            "brier": 0.5028927220130841,
+            "balanced_accuracy": 0.5018518518518519
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.7166666666666667,
+            "mean_top_probability": 0.7445733398199081,
+            "ece": 0.06032834947109224,
+            "wilson95": [
+              0.5923247495026482,
+              0.8149332139569141
+            ],
+            "mean_probability_of_correct_answer": 0.6155426710727625,
+            "nll": 0.9686696759383006,
+            "brier": 0.4191776898911956,
+            "balanced_accuracy": 0.5137844611528822
+          },
+          "d5": {
+            "n": 55,
+            "accuracy": 0.6,
+            "mean_top_probability": 0.7505927410992709,
+            "ece": 0.1505927410992709,
+            "wilson95": [
+              0.4681256091064502,
+              0.7188169621356643
+            ],
+            "mean_probability_of_correct_answer": 0.5614368167843415,
+            "nll": 1.185715189500031,
+            "brier": 0.5389049010946784,
+            "balanced_accuracy": 0.47222222222222215
+          }
+        },
+        "usage": {
+          "state_tokens": 847,
+          "question_tokens": 52963,
+          "input_tokens": 53810,
+          "output_tokens": 6275,
+          "questions": 355,
+          "branches": 355,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 15582.9,
+          "total_ms": 15582.9,
+          "decisions_per_request": 5.92
+        },
+        "examples": []
+      }
+    },
+    "scidocs_rel_bool": {
+      "qwen_trained": {
+        "dataset": "scidocs_rel_bool",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 360,
+        "overall": {
+          "n": 360,
+          "accuracy": 0.7777777777777778,
+          "mean_top_probability": 0.6793965248597993,
+          "ece": 0.09838125291797847,
+          "wilson95": [
+            0.7320252839013244,
+            0.817664471200896
+          ],
+          "mean_probability_of_correct_answer": 0.6283460753659408,
+          "nll": 0.5070190814102045,
+          "brier": 0.32878164741735755,
+          "balanced_accuracy": 0.7229166666666667
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.8666666666666667,
+            "mean_top_probability": 0.6821535388628642,
+            "ece": 0.18451312780380247,
+            "wilson95": [
+              0.7583460540992789,
+              0.9308597302169036
+            ],
+            "mean_probability_of_correct_answer": 0.6540194787085056,
+            "nll": 0.451584215430459,
+            "brier": 0.2763829830609022,
+            "balanced_accuracy": 0.8295454545454546
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.7666666666666667,
+            "mean_top_probability": 0.6819691369930904,
+            "ece": 0.13704408903916676,
+            "wilson95": [
+              0.6456348865960799,
+              0.8556056838156894
+            ],
+            "mean_probability_of_correct_answer": 0.6263402953743935,
+            "nll": 0.5124367790300492,
+            "brier": 0.33360104689202497,
+            "balanced_accuracy": 0.7203290246768508
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.75,
+            "mean_top_probability": 0.6822043279806773,
+            "ece": 0.17633744676907856,
+            "wilson95": [
+              0.6276768905451521,
+              0.8422361442158816
+            ],
+            "mean_probability_of_correct_answer": 0.6093522700170676,
+            "nll": 0.5493926344251524,
+            "brier": 0.3689104425245625,
+            "balanced_accuracy": 0.6985898942420682
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.6833333333333333,
+            "mean_top_probability": 0.6704651782910029,
+            "ece": 0.08878421286741893,
+            "wilson95": [
+              0.5576599505698345,
+              0.7869429415882567
+            ],
+            "mean_probability_of_correct_answer": 0.5933075542251269,
+            "nll": 0.5808244236285797,
+            "brier": 0.392435435530861,
+            "balanced_accuracy": 0.6012311901504788
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.7666666666666667,
+            "mean_top_probability": 0.6665791004896164,
+            "ece": 0.1000875661770503,
+            "wilson95": [
+              0.6456348865960799,
+              0.8556056838156894
+            ],
+            "mean_probability_of_correct_answer": 0.6209161942203839,
+            "nll": 0.5109565916024656,
+            "brier": 0.3324920193663685,
+            "balanced_accuracy": 0.7428571428571429
+          },
+          "d5": {
+            "n": 60,
+            "accuracy": 0.8333333333333334,
+            "mean_top_probability": 0.6930078665415446,
+            "ece": 0.14032546679178873,
+            "wilson95": [
+              0.7196814850279217,
+              0.9068692279867897
+            ],
+            "mean_probability_of_correct_answer": 0.6661406596501668,
+            "nll": 0.4369198443445214,
+            "brier": 0.26886795712942535,
+            "balanced_accuracy": 0.7670454545454546
+          }
+        },
+        "usage": {
+          "state_tokens": 1354,
+          "question_tokens": 47394,
+          "input_tokens": 48748,
+          "output_tokens": 6360,
+          "questions": 360,
+          "branches": 360,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 15405.6,
+          "total_ms": 15405.6,
+          "decisions_per_request": 6.0
+        },
+        "examples": []
+      }
+    },
+    "scidocs_rel_choice": {
+      "qwen_trained": {
+        "dataset": "scidocs_rel_choice",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 60,
+        "overall": {
+          "n": 60,
+          "accuracy": 0.8833333333333333,
+          "mean_top_probability": 0.8076154241959254,
+          "ece": 0.09768162071704864,
+          "wilson95": [
+            0.7782097940014187,
+            0.9423235259654995
+          ],
+          "mean_probability_of_correct_answer": 0.7761779583990573,
+          "nll": 0.3302341160254199,
+          "brier": 0.17436199562839355,
+          "balanced_accuracy": 0.8731060606060606
+        },
+        "by_question": {
+          "passage": {
+            "n": 60,
+            "accuracy": 0.8833333333333333,
+            "mean_top_probability": 0.8076154241959254,
+            "ece": 0.09768162071704864,
+            "wilson95": [
+              0.7782097940014187,
+              0.9423235259654995
+            ],
+            "mean_probability_of_correct_answer": 0.7761779583990573,
+            "nll": 0.3302341160254199,
+            "brier": 0.17436199562839355,
+            "balanced_accuracy": 0.8731060606060606
+          }
+        },
+        "usage": {
+          "state_tokens": 1354,
+          "question_tokens": 9363,
+          "input_tokens": 10717,
+          "output_tokens": 1260,
+          "questions": 60,
+          "branches": 60,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 3278.0,
+          "total_ms": 3278.0,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "scidocs_rel_score": {
+      "qwen_trained": {
+        "dataset": "scidocs_rel_score",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 360,
+        "overall": {
+          "n": 360,
+          "accuracy": 0.7805555555555556,
+          "mean_top_probability": 0.7925608199503686,
+          "ece": 0.05795413470930527,
+          "wilson95": [
+            0.7349633469811061,
+            0.8202233056721364
+          ],
+          "mean_probability_of_correct_answer": 0.7297436705686979,
+          "nll": 0.3952202784302039,
+          "brier": 0.2583063357774671,
+          "balanced_accuracy": 0.7
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.8333333333333334,
+            "mean_top_probability": 0.8010880649089813,
+            "ece": 0.06910341580708822,
+            "wilson95": [
+              0.7196814850279217,
+              0.9068692279867897
+            ],
+            "mean_probability_of_correct_answer": 0.7559296029309431,
+            "nll": 0.3411059257901548,
+            "brier": 0.21533532853514548,
+            "balanced_accuracy": 0.7272727272727273
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.7166666666666667,
+            "mean_top_probability": 0.7911464403072993,
+            "ece": 0.14154504636923473,
+            "wilson95": [
+              0.5923247495026482,
+              0.8149332139569141
+            ],
+            "mean_probability_of_correct_answer": 0.719910469899575,
+            "nll": 0.41062112392779554,
+            "brier": 0.2795594413010391,
+            "balanced_accuracy": 0.6468860164512338
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.7,
+            "mean_top_probability": 0.7728324800729751,
+            "ece": 0.10758115351200102,
+            "wilson95": [
+              0.5749105303360957,
+              0.801019897472731
+            ],
+            "mean_probability_of_correct_answer": 0.681232837587595,
+            "nll": 0.48841204208188266,
+            "brier": 0.33509239952415076,
+            "balanced_accuracy": 0.6251468860164513
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.8666666666666667,
+            "mean_top_probability": 0.8119189639886221,
+            "ece": 0.07688215970993044,
+            "wilson95": [
+              0.7583460540992789,
+              0.9308597302169036
+            ],
+            "mean_probability_of_correct_answer": 0.7449032191187144,
+            "nll": 0.39124953082140995,
+            "brier": 0.24138769262920054,
+            "balanced_accuracy": 0.8180574555403557
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.7166666666666667,
+            "mean_top_probability": 0.7660974115133286,
+            "ece": 0.09035523633162182,
+            "wilson95": [
+              0.5923247495026482,
+              0.8149332139569141
+            ],
+            "mean_probability_of_correct_answer": 0.6899580287436644,
+            "nll": 0.45662829386353393,
+            "brier": 0.3131259805965678,
+            "balanced_accuracy": 0.6828571428571428
+          },
+          "d5": {
+            "n": 60,
+            "accuracy": 0.85,
+            "mean_top_probability": 0.8122815589110056,
+            "ece": 0.10102922519048053,
+            "wilson95": [
+              0.7388517410884038,
+              0.9190265075770431
+            ],
+            "mean_probability_of_correct_answer": 0.786527865131696,
+            "nll": 0.2833047540964465,
+            "brier": 0.16533717207869889,
+            "balanced_accuracy": 0.7386363636363636
+          }
+        },
+        "usage": {
+          "state_tokens": 1354,
+          "question_tokens": 50274,
+          "input_tokens": 51628,
+          "output_tokens": 6360,
+          "questions": 360,
+          "branches": 360,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 16123.9,
+          "total_ms": 16123.9,
+          "decisions_per_request": 6.0
+        },
+        "examples": []
+      }
+    },
+    "scifact_rel_bool": {
+      "qwen_trained": {
+        "dataset": "scifact_rel_bool",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 306,
+        "overall": {
+          "n": 306,
+          "accuracy": 0.9150326797385621,
+          "mean_top_probability": 0.7016551595887327,
+          "ece": 0.21337752014982933,
+          "wilson95": [
+            0.8784155418432279,
+            0.9413581747913363
+          ],
+          "mean_probability_of_correct_answer": 0.6795298554051935,
+          "nll": 0.4102845055085578,
+          "brier": 0.23982376162701216,
+          "balanced_accuracy": 0.8195075757575758
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.9333333333333333,
+            "mean_top_probability": 0.7022550523281097,
+            "ece": 0.2310782810052236,
+            "wilson95": [
+              0.8407442010623228,
+              0.973771725856802
+            ],
+            "mean_probability_of_correct_answer": 0.6861966108282407,
+            "nll": 0.3941833852451496,
+            "brier": 0.22399098105579057,
+            "balanced_accuracy": 0.8739770867430442
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.9333333333333333,
+            "mean_top_probability": 0.7071439852317174,
+            "ece": 0.2261893481016159,
+            "wilson95": [
+              0.8407442010623228,
+              0.973771725856802
+            ],
+            "mean_probability_of_correct_answer": 0.6869745001196861,
+            "nll": 0.39725300949534625,
+            "brier": 0.22894244686131301,
+            "balanced_accuracy": 0.8333333333333333
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.8833333333333333,
+            "mean_top_probability": 0.7087352295716604,
+            "ece": 0.17459810376167295,
+            "wilson95": [
+              0.7782097940014187,
+              0.9423235259654995
+            ],
+            "mean_probability_of_correct_answer": 0.669006834179163,
+            "nll": 0.44010172529551556,
+            "brier": 0.2675133706562459,
+            "balanced_accuracy": 0.75
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.9333333333333333,
+            "mean_top_probability": 0.6894144435723623,
+            "ece": 0.24391888976097106,
+            "wilson95": [
+              0.8407442010623228,
+              0.973771725856802
+            ],
+            "mean_probability_of_correct_answer": 0.6798180838425955,
+            "nll": 0.4023127927281498,
+            "brier": 0.2319126179045443,
+            "balanced_accuracy": 0.8666666666666667
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.9333333333333333,
+            "mean_top_probability": 0.7045493970314661,
+            "ece": 0.2287839363018672,
+            "wilson95": [
+              0.8407442010623228,
+              0.973771725856802
+            ],
+            "mean_probability_of_correct_answer": 0.6833186840017637,
+            "nll": 0.4035329978752384,
+            "brier": 0.23272634621893717,
+            "balanced_accuracy": 0.869281045751634
+          },
+          "d5": {
+            "n": 6,
+            "accuracy": 0.5,
+            "mean_top_probability": 0.6634320616722107,
+            "ece": 0.28788169225056964,
+            "wilson95": [
+              0.18761280689940868,
+              0.8123871931005913
+            ],
+            "mean_probability_of_correct_answer": 0.6028754959503809,
+            "nll": 0.5506706745424464,
+            "brier": 0.38015421600929805,
+            "balanced_accuracy": 0.5
+          }
+        },
+        "usage": {
+          "state_tokens": 1729,
+          "question_tokens": 43661,
+          "input_tokens": 45390,
+          "output_tokens": 5442,
+          "questions": 306,
+          "branches": 306,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 14204.9,
+          "total_ms": 14204.9,
+          "decisions_per_request": 5.1
+        },
+        "examples": []
+      }
+    },
+    "scifact_rel_choice": {
+      "qwen_trained": {
+        "dataset": "scifact_rel_choice",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 60,
+        "overall": {
+          "n": 60,
+          "accuracy": 0.9166666666666666,
+          "mean_top_probability": 0.9071436633666357,
+          "ece": 0.07146142621835076,
+          "wilson95": [
+            0.8193083153188752,
+            0.9638800759495141
+          ],
+          "mean_probability_of_correct_answer": 0.868172826928397,
+          "nll": 0.2278653282045359,
+          "brier": 0.1151025245790729,
+          "balanced_accuracy": 0.9022435897435896
+        },
+        "by_question": {
+          "passage": {
+            "n": 60,
+            "accuracy": 0.9166666666666666,
+            "mean_top_probability": 0.9071436633666357,
+            "ece": 0.07146142621835076,
+            "wilson95": [
+              0.8193083153188752,
+              0.9638800759495141
+            ],
+            "mean_probability_of_correct_answer": 0.868172826928397,
+            "nll": 0.2278653282045359,
+            "brier": 0.1151025245790729,
+            "balanced_accuracy": 0.9022435897435896
+          }
+        },
+        "usage": {
+          "state_tokens": 1729,
+          "question_tokens": 10528,
+          "input_tokens": 12257,
+          "output_tokens": 1260,
+          "questions": 60,
+          "branches": 60,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 3515.6,
+          "total_ms": 3515.6,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "scifact_rel_score": {
+      "qwen_trained": {
+        "dataset": "scifact_rel_score",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 306,
+        "overall": {
+          "n": 306,
+          "accuracy": 0.9444444444444444,
+          "mean_top_probability": 0.8585033303771923,
+          "ece": 0.0892038127176123,
+          "wilson95": [
+            0.9128397267132459,
+            0.9650281903127441
+          ],
+          "mean_probability_of_correct_answer": 0.8424280161658922,
+          "nll": 0.20306457098293107,
+          "brier": 0.10251388112452925,
+          "balanced_accuracy": 0.8821969696969697
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.95,
+            "mean_top_probability": 0.8670226693153381,
+            "ece": 0.08297733068466188,
+            "wilson95": [
+              0.8629926537490016,
+              0.9828508088208587
+            ],
+            "mean_probability_of_correct_answer": 0.8507906240721543,
+            "nll": 0.18924698531353892,
+            "brier": 0.09572419512884647,
+            "balanced_accuracy": 0.8846153846153846
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.9166666666666666,
+            "mean_top_probability": 0.8458939055601756,
+            "ece": 0.08741252422332764,
+            "wilson95": [
+              0.8193083153188752,
+              0.9638800759495141
+            ],
+            "mean_probability_of_correct_answer": 0.8210080207635959,
+            "nll": 0.24376435688838025,
+            "brier": 0.1325086094479068,
+            "balanced_accuracy": 0.8229166666666666
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.9333333333333333,
+            "mean_top_probability": 0.8627034842967987,
+            "ece": 0.0803542613983154,
+            "wilson95": [
+              0.8407442010623228,
+              0.973771725856802
+            ],
+            "mean_probability_of_correct_answer": 0.8357525029530127,
+            "nll": 0.2310224222224863,
+            "brier": 0.12634073231610524,
+            "balanced_accuracy": 0.8571428571428572
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.95,
+            "mean_top_probability": 0.8601915091276169,
+            "ece": 0.0985642979542414,
+            "wilson95": [
+              0.8629926537490016,
+              0.9828508088208587
+            ],
+            "mean_probability_of_correct_answer": 0.8487715075413386,
+            "nll": 0.1852971657828065,
+            "brier": 0.08998351744476919,
+            "balanced_accuracy": 0.9
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.9666666666666667,
+            "mean_top_probability": 0.8613591065009435,
+            "ece": 0.14100206593672432,
+            "wilson95": [
+              0.8863601247107462,
+              0.9908108735098498
+            ],
+            "mean_probability_of_correct_answer": 0.8588639169931411,
+            "nll": 0.16419984435904214,
+            "brier": 0.06815066040596024,
+            "balanced_accuracy": 0.934640522875817
+          },
+          "d5": {
+            "n": 6,
+            "accuracy": 1.0,
+            "mean_top_probability": 0.8119631012280782,
+            "ece": 0.18803689877192178,
+            "wilson95": [
+              0.6096569663469354,
+              0.9999999999999999
+            ],
+            "mean_probability_of_correct_answer": 0.8119631012280782,
+            "nll": 0.2209853744669444,
+            "brier": 0.10113078991511466,
+            "balanced_accuracy": 1.0
+          }
+        },
+        "usage": {
+          "state_tokens": 1729,
+          "question_tokens": 46109,
+          "input_tokens": 47838,
+          "output_tokens": 5442,
+          "questions": 306,
+          "branches": 306,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 14710.8,
+          "total_ms": 14710.8,
+          "decisions_per_request": 5.1
+        },
+        "examples": []
+      }
+    },
+    "snli": {
+      "qwen_trained": {
+        "dataset": "snli",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 1184,
+        "overall": {
+          "n": 1184,
+          "accuracy": 0.8589527027027027,
+          "mean_top_probability": 0.8672622889280319,
+          "ece": 0.015581795039611894,
+          "wilson95": [
+            0.8379633339470607,
+            0.8776202926913732
+          ],
+          "mean_probability_of_correct_answer": 0.7894273049506237,
+          "nll": 0.456235710851403,
+          "brier": 0.2220987642699074,
+          "balanced_accuracy": 0.85720881949166
+        },
+        "by_question": {
+          "h0": {
+            "n": 400,
+            "accuracy": 0.9075,
+            "mean_top_probability": 0.8798987749218941,
+            "ece": 0.04017726957798004,
+            "wilson95": [
+              0.8751007447962681,
+              0.9321464531149922
+            ],
+            "mean_probability_of_correct_answer": 0.8267796273744898,
+            "nll": 0.36653671036469004,
+            "brier": 0.1652971312484679,
+            "balanced_accuracy": 0.8993418151220185
+          },
+          "h1": {
+            "n": 400,
+            "accuracy": 0.83,
+            "mean_top_probability": 0.8589332631975413,
+            "ece": 0.033023891225457194,
+            "wilson95": [
+              0.7900900795523471,
+              0.8636315776518637
+            ],
+            "mean_probability_of_correct_answer": 0.764988269135356,
+            "nll": 0.5081890129641952,
+            "brier": 0.2576736934352067,
+            "balanced_accuracy": 0.8329837399903431
+          },
+          "h2": {
+            "n": 384,
+            "accuracy": 0.8385416666666666,
+            "mean_top_probability": 0.8627753511536866,
+            "ece": 0.024567635341857835,
+            "wilson95": [
+              0.7984149176298508,
+              0.8719618547432003
+            ],
+            "mean_probability_of_correct_answer": 0.775975964733334,
+            "nll": 0.4955541466575705,
+            "brier": 0.24420991412005377,
+            "balanced_accuracy": 0.8462341577493747
+          }
+        },
+        "usage": {
+          "state_tokens": 9785,
+          "question_tokens": 96546,
+          "input_tokens": 106331,
+          "output_tokens": 21728,
+          "questions": 1184,
+          "branches": 1184,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 36285.3,
+          "total_ms": 36285.3,
+          "decisions_per_request": 2.96
+        },
+        "examples": []
+      }
+    },
+    "trec-covid_rel_bool": {
+      "qwen_trained": {
+        "dataset": "trec-covid_rel_bool",
+        "split": "test",
+        "n_items": 50,
+        "n_decisions": 300,
+        "overall": {
+          "n": 300,
+          "accuracy": 0.7533333333333333,
+          "mean_top_probability": 0.6375660562515258,
+          "ece": 0.11576727708180744,
+          "wilson95": [
+            0.7015536959202178,
+            0.7987069662142627
+          ],
+          "mean_probability_of_correct_answer": 0.5884446721275648,
+          "nll": 0.5614850702331484,
+          "brier": 0.37685380818503544,
+          "balanced_accuracy": 0.7250000000000001
+        },
+        "by_question": {
+          "d0": {
+            "n": 50,
+            "accuracy": 0.8,
+            "mean_top_probability": 0.6392433547973633,
+            "ece": 0.16075664520263672,
+            "wilson95": [
+              0.6696262789551477,
+              0.8875637005402612
+            ],
+            "mean_probability_of_correct_answer": 0.6007140642404556,
+            "nll": 0.5362352020912108,
+            "brier": 0.35196765820268344,
+            "balanced_accuracy": 0.7833333333333333
+          },
+          "d1": {
+            "n": 50,
+            "accuracy": 0.74,
+            "mean_top_probability": 0.6377995872497558,
+            "ece": 0.10220041275024411,
+            "wilson95": [
+              0.6044657801100008,
+              0.8412862034863262
+            ],
+            "mean_probability_of_correct_answer": 0.5829192388057709,
+            "nll": 0.5743650399271003,
+            "brier": 0.3886303360966742,
+            "balanced_accuracy": 0.7245322245322245
+          },
+          "d2": {
+            "n": 50,
+            "accuracy": 0.76,
+            "mean_top_probability": 0.6259114682674408,
+            "ece": 0.1426907312870026,
+            "wilson95": [
+              0.6258705062480763,
+              0.8570274759812779
+            ],
+            "mean_probability_of_correct_answer": 0.5895603573322297,
+            "nll": 0.5515332340714499,
+            "brier": 0.3677526593661709,
+            "balanced_accuracy": 0.7274305555555556
+          },
+          "d3": {
+            "n": 50,
+            "accuracy": 0.76,
+            "mean_top_probability": 0.639431027173996,
+            "ece": 0.12056897282600401,
+            "wilson95": [
+              0.6258705062480763,
+              0.8570274759812779
+            ],
+            "mean_probability_of_correct_answer": 0.5925884377956391,
+            "nll": 0.5540374736826513,
+            "brier": 0.3713039971522084,
+            "balanced_accuracy": 0.6881496881496881
+          },
+          "d4": {
+            "n": 50,
+            "accuracy": 0.7,
+            "mean_top_probability": 0.6464326810836792,
+            "ece": 0.06571598768234255,
+            "wilson95": [
+              0.562493877226366,
+              0.8089661091039063
+            ],
+            "mean_probability_of_correct_answer": 0.5841102057695389,
+            "nll": 0.5768885438044329,
+            "brier": 0.39222612273935725,
+            "balanced_accuracy": 0.6765704584040747
+          },
+          "d5": {
+            "n": 50,
+            "accuracy": 0.76,
+            "mean_top_probability": 0.6365782189369201,
+            "ece": 0.1234217810630798,
+            "wilson95": [
+              0.6258705062480763,
+              0.8570274759812779
+            ],
+            "mean_probability_of_correct_answer": 0.5807757288217544,
+            "nll": 0.5758509278220454,
+            "brier": 0.3892420755531179,
+            "balanced_accuracy": 0.7468805704099821
+          }
+        },
+        "usage": {
+          "state_tokens": 1201,
+          "question_tokens": 38239,
+          "input_tokens": 39440,
+          "output_tokens": 5300,
+          "questions": 300,
+          "branches": 300,
+          "requests": 50,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 13076.5,
+          "total_ms": 13076.5,
+          "decisions_per_request": 6.0
+        },
+        "examples": []
+      }
+    },
+    "trec-covid_rel_choice": {
+      "qwen_trained": {
+        "dataset": "trec-covid_rel_choice",
+        "split": "test",
+        "n_items": 50,
+        "n_decisions": 50,
+        "overall": {
+          "n": 50,
+          "accuracy": 0.78,
+          "mean_top_probability": 0.7990461325645447,
+          "ece": 0.0789688801765442,
+          "wilson95": [
+            0.6475818431054045,
+            0.8724621377569771
+          ],
+          "mean_probability_of_correct_answer": 0.6959926483593881,
+          "nll": 0.6812871715335865,
+          "brier": 0.32924313145910317,
+          "balanced_accuracy": 0.7202380952380952
+        },
+        "by_question": {
+          "passage": {
+            "n": 50,
+            "accuracy": 0.78,
+            "mean_top_probability": 0.7990461325645447,
+            "ece": 0.0789688801765442,
+            "wilson95": [
+              0.6475818431054045,
+              0.8724621377569771
+            ],
+            "mean_probability_of_correct_answer": 0.6959926483593881,
+            "nll": 0.6812871715335865,
+            "brier": 0.32924313145910317,
+            "balanced_accuracy": 0.7202380952380952
+          }
+        },
+        "usage": {
+          "state_tokens": 1201,
+          "question_tokens": 7824,
+          "input_tokens": 9025,
+          "output_tokens": 1050,
+          "questions": 50,
+          "branches": 50,
+          "requests": 50,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 2944.5,
+          "total_ms": 2944.5,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "trec-covid_rel_score": {
+      "qwen_trained": {
+        "dataset": "trec-covid_rel_score",
+        "split": "test",
+        "n_items": 50,
+        "n_decisions": 300,
+        "overall": {
+          "n": 300,
+          "accuracy": 0.6866666666666666,
+          "mean_top_probability": 0.8681570145487786,
+          "ece": 0.18149034788211188,
+          "wilson95": [
+            0.6320966534895827,
+            0.7365164659779293
+          ],
+          "mean_probability_of_correct_answer": 0.6647151255288918,
+          "nll": 1.40561499130307,
+          "brier": 0.48105976800090217,
+          "balanced_accuracy": 0.3859302325581395
+        },
+        "by_question": {
+          "d0": {
+            "n": 50,
+            "accuracy": 0.62,
+            "mean_top_probability": 0.8625887495279312,
+            "ece": 0.24258874952793125,
+            "wilson95": [
+              0.4815019502239357,
+              0.7413740415742278
+            ],
+            "mean_probability_of_correct_answer": 0.6372012298810296,
+            "nll": 1.4195808497459301,
+            "brier": 0.5323778319362232,
+            "balanced_accuracy": 0.3636363636363636
+          },
+          "d1": {
+            "n": 50,
+            "accuracy": 0.78,
+            "mean_top_probability": 0.879532334804535,
+            "ece": 0.11402617454528809,
+            "wilson95": [
+              0.6475818431054045,
+              0.8724621377569771
+            ],
+            "mean_probability_of_correct_answer": 0.7163174198803608,
+            "nll": 1.3736797052094507,
+            "brier": 0.39268036259660327,
+            "balanced_accuracy": 0.5555555555555555
+          },
+          "d2": {
+            "n": 50,
+            "accuracy": 0.64,
+            "mean_top_probability": 0.8523004138469696,
+            "ece": 0.21230041384696963,
+            "wilson95": [
+              0.5014076201030195,
+              0.7586143703281711
+            ],
+            "mean_probability_of_correct_answer": 0.6215537359658628,
+            "nll": 1.7128152828572882,
+            "brier": 0.5496820504163704,
+            "balanced_accuracy": 0.3333333333333333
+          },
+          "d3": {
+            "n": 50,
+            "accuracy": 0.72,
+            "mean_top_probability": 0.879272198677063,
+            "ece": 0.1791585040092469,
+            "wilson95": [
+              0.5833461285401034,
+              0.8252598564231963
+            ],
+            "mean_probability_of_correct_answer": 0.7038183197565376,
+            "nll": 1.1290503594417671,
+            "brier": 0.41882416417707874,
+            "balanced_accuracy": 0.32432432432432434
+          },
+          "d4": {
+            "n": 50,
+            "accuracy": 0.64,
+            "mean_top_probability": 0.8682038354873657,
+            "ece": 0.22820383548736578,
+            "wilson95": [
+              0.5014076201030195,
+              0.7586143703281711
+            ],
+            "mean_probability_of_correct_answer": 0.6130932081193896,
+            "nll": 1.6235368618964734,
+            "brier": 0.5780877243027566,
+            "balanced_accuracy": 0.375
+          },
+          "d5": {
+            "n": 50,
+            "accuracy": 0.72,
+            "mean_top_probability": 0.8670445549488067,
+            "ece": 0.18574816346168518,
+            "wilson95": [
+              0.5833461285401034,
+              0.8252598564231963
+            ],
+            "mean_probability_of_correct_answer": 0.6963068395701703,
+            "nll": 1.1750268886675104,
+            "brier": 0.4147064745763808,
+            "balanced_accuracy": 0.43333333333333335
+          }
+        },
+        "usage": {
+          "state_tokens": 1201,
+          "question_tokens": 40639,
+          "input_tokens": 41840,
+          "output_tokens": 5300,
+          "questions": 300,
+          "branches": 300,
+          "requests": 50,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 13573.5,
+          "total_ms": 13573.5,
+          "decisions_per_request": 6.0
+        },
+        "examples": []
+      }
+    },
+    "truthfulqa": {
+      "qwen_trained": {
+        "dataset": "truthfulqa",
+        "split": "test",
+        "n_items": 240,
+        "n_decisions": 240,
+        "overall": {
+          "n": 240,
+          "accuracy": 0.6083333333333333,
+          "mean_top_probability": 0.7353460770100355,
+          "ece": 0.1367757967362801,
+          "wilson95": [
+            0.54533517048802,
+            0.6679180233886604
+          ],
+          "mean_probability_of_correct_answer": 0.5414381395768335,
+          "nll": 1.201361358929687,
+          "brier": 0.5552361504968343,
+          "balanced_accuracy": 0.6076668449061697
+        },
+        "by_question": {
+          "truthful": {
+            "n": 240,
+            "accuracy": 0.6083333333333333,
+            "mean_top_probability": 0.7353460770100355,
+            "ece": 0.1367757967362801,
+            "wilson95": [
+              0.54533517048802,
+              0.6679180233886604
+            ],
+            "mean_probability_of_correct_answer": 0.5414381395768335,
+            "nll": 1.201361358929687,
+            "brier": 0.5552361504968343,
+            "balanced_accuracy": 0.6076668449061697
+          }
+        },
+        "usage": {
+          "state_tokens": 5354,
+          "question_tokens": 20309,
+          "input_tokens": 25663,
+          "output_tokens": 5040,
+          "questions": 240,
+          "branches": 240,
+          "requests": 240,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 9778.7,
+          "total_ms": 9778.7,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "vihealthqa_rel_bool": {
+      "qwen_trained": {
+        "dataset": "vihealthqa_rel_bool",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 359,
+        "overall": {
+          "n": 359,
+          "accuracy": 0.6824512534818942,
+          "mean_top_probability": 0.7001120360116773,
+          "ece": 0.0401085897408488,
+          "wilson95": [
+            0.6325802732823278,
+            0.728458813746282
+          ],
+          "mean_probability_of_correct_answer": 0.5843215965377919,
+          "nll": 0.6217522446611993,
+          "brier": 0.4297717689377914,
+          "balanced_accuracy": 0.5570203081232493
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.6,
+            "mean_top_probability": 0.7007203022638957,
+            "ece": 0.1153355081876119,
+            "wilson95": [
+              0.47365824394206846,
+              0.714306969962345
+            ],
+            "mean_probability_of_correct_answer": 0.5503798541923364,
+            "nll": 0.6960997498605166,
+            "brier": 0.49847709352232367,
+            "balanced_accuracy": 0.5138888888888888
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.6833333333333333,
+            "mean_top_probability": 0.6953110158443451,
+            "ece": 0.09413007895151772,
+            "wilson95": [
+              0.5576599505698345,
+              0.7869429415882567
+            ],
+            "mean_probability_of_correct_answer": 0.5982228420674801,
+            "nll": 0.5846056363072433,
+            "brier": 0.4001386869843975,
+            "balanced_accuracy": 0.5915750915750916
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.6833333333333333,
+            "mean_top_probability": 0.6986741344134013,
+            "ece": 0.03537131150563553,
+            "wilson95": [
+              0.5576599505698345,
+              0.7869429415882567
+            ],
+            "mean_probability_of_correct_answer": 0.5868312162657578,
+            "nll": 0.6057803038551834,
+            "brier": 0.41785434126333987,
+            "balanced_accuracy": 0.4659090909090909
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.6,
+            "mean_top_probability": 0.6997130940357844,
+            "ece": 0.1159376055002212,
+            "wilson95": [
+              0.47365824394206846,
+              0.714306969962345
+            ],
+            "mean_probability_of_correct_answer": 0.5568122612933318,
+            "nll": 0.6954003509728157,
+            "brier": 0.4879511800652598,
+            "balanced_accuracy": 0.5208333333333333
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.8,
+            "mean_top_probability": 0.6995137919982274,
+            "ece": 0.12915457983811696,
+            "wilson95": [
+              0.6821795390818299,
+              0.8817161026314104
+            ],
+            "mean_probability_of_correct_answer": 0.6168416035672029,
+            "nll": 0.5521286680419502,
+            "brier": 0.36608986924248055,
+            "balanced_accuracy": 0.6666666666666667
+          },
+          "d5": {
+            "n": 59,
+            "accuracy": 0.7288135593220338,
+            "mean_top_probability": 0.7068522138110662,
+            "ece": 0.08168840610374838,
+            "wilson95": [
+              0.6040199456171089,
+              0.8256317500749166
+            ],
+            "mean_probability_of_correct_answer": 0.5970540087101823,
+            "nll": 0.5960707337475928,
+            "brier": 0.4077524539660828,
+            "balanced_accuracy": 0.606578947368421
+          }
+        },
+        "usage": {
+          "state_tokens": 2166,
+          "question_tokens": 49232,
+          "input_tokens": 51398,
+          "output_tokens": 6343,
+          "questions": 359,
+          "branches": 359,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 18435.4,
+          "total_ms": 18435.4,
+          "decisions_per_request": 5.98
+        },
+        "examples": []
+      }
+    },
+    "vihealthqa_rel_choice": {
+      "qwen_trained": {
+        "dataset": "vihealthqa_rel_choice",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 60,
+        "overall": {
+          "n": 60,
+          "accuracy": 0.25,
+          "mean_top_probability": 0.7496121595303218,
+          "ece": 0.49961215953032173,
+          "wilson95": [
+            0.1577638557841185,
+            0.372323109454848
+          ],
+          "mean_probability_of_correct_answer": 0.2572892027589357,
+          "nll": 2.6684651026317057,
+          "brier": 1.11953819868159,
+          "balanced_accuracy": 0.25416666666666665
+        },
+        "by_question": {
+          "passage": {
+            "n": 60,
+            "accuracy": 0.25,
+            "mean_top_probability": 0.7496121595303218,
+            "ece": 0.49961215953032173,
+            "wilson95": [
+              0.1577638557841185,
+              0.372323109454848
+            ],
+            "mean_probability_of_correct_answer": 0.2572892027589357,
+            "nll": 2.6684651026317057,
+            "brier": 1.11953819868159,
+            "balanced_accuracy": 0.25416666666666665
+          }
+        },
+        "usage": {
+          "state_tokens": 2166,
+          "question_tokens": 12206,
+          "input_tokens": 14372,
+          "output_tokens": 1260,
+          "questions": 60,
+          "branches": 60,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 4687.9,
+          "total_ms": 4687.9,
+          "decisions_per_request": 1.0
+        },
+        "examples": []
+      }
+    },
+    "vihealthqa_rel_score": {
+      "qwen_trained": {
+        "dataset": "vihealthqa_rel_score",
+        "split": "test",
+        "n_items": 60,
+        "n_decisions": 359,
+        "overall": {
+          "n": 359,
+          "accuracy": 0.7075208913649025,
+          "mean_top_probability": 0.9017485235726933,
+          "ece": 0.19445153182595554,
+          "wilson95": [
+            0.6584648091208146,
+            0.7521827020796651
+          ],
+          "mean_probability_of_correct_answer": 0.6741182278675705,
+          "nll": 0.8066930680163701,
+          "brier": 0.4902233245210206,
+          "balanced_accuracy": 0.5757703081232493
+        },
+        "by_question": {
+          "d0": {
+            "n": 60,
+            "accuracy": 0.6,
+            "mean_top_probability": 0.89082726140817,
+            "ece": 0.29082726140817006,
+            "wilson95": [
+              0.47365824394206846,
+              0.714306969962345
+            ],
+            "mean_probability_of_correct_answer": 0.5842363054553668,
+            "nll": 1.0501666883033622,
+            "brier": 0.6593268532905141,
+            "balanced_accuracy": 0.5138888888888888
+          },
+          "d1": {
+            "n": 60,
+            "accuracy": 0.7166666666666667,
+            "mean_top_probability": 0.9076573083798091,
+            "ece": 0.22626072466373442,
+            "wilson95": [
+              0.5923247495026482,
+              0.8149332139569141
+            ],
+            "mean_probability_of_correct_answer": 0.6909677557336787,
+            "nll": 0.7797863446503365,
+            "brier": 0.46744615278042695,
+            "balanced_accuracy": 0.6062271062271062
+          },
+          "d2": {
+            "n": 60,
+            "accuracy": 0.7,
+            "mean_top_probability": 0.9139023264249165,
+            "ece": 0.21390232642491655,
+            "wilson95": [
+              0.5749105303360957,
+              0.801019897472731
+            ],
+            "mean_probability_of_correct_answer": 0.6801899707565705,
+            "nll": 0.7917293501328025,
+            "brier": 0.4895286400582202,
+            "balanced_accuracy": 0.4772727272727273
+          },
+          "d3": {
+            "n": 60,
+            "accuracy": 0.6666666666666666,
+            "mean_top_probability": 0.8970491607983907,
+            "ece": 0.24260229865709942,
+            "wilson95": [
+              0.540566298666634,
+              0.7727090578407216
+            ],
+            "mean_probability_of_correct_answer": 0.6302415382117033,
+            "nll": 0.9463104291792906,
+            "brier": 0.5728797683236291,
+            "balanced_accuracy": 0.5833333333333334
+          },
+          "d4": {
+            "n": 60,
+            "accuracy": 0.8333333333333334,
+            "mean_top_probability": 0.8925423661867777,
+            "ece": 0.09264740347862244,
+            "wilson95": [
+              0.7196814850279217,
+              0.9068692279867897
+            ],
+            "mean_probability_of_correct_answer": 0.7664831683039666,
+            "nll": 0.5150087175340853,
+            "brier": 0.29503911610511674,
+            "balanced_accuracy": 0.6888888888888889
+          },
+          "d5": {
+            "n": 59,
+            "accuracy": 0.7288135593220338,
+            "mean_top_probability": 0.9086273656053058,
+            "ece": 0.19538485296701985,
+            "wilson95": [
+              0.6040199456171089,
+              0.8256317500749166
+            ],
+            "mean_probability_of_correct_answer": 0.6929037202844175,
+            "nll": 0.7563172818624453,
+            "brier": 0.4565583333825768,
+            "balanced_accuracy": 0.606578947368421
+          }
+        },
+        "usage": {
+          "state_tokens": 2166,
+          "question_tokens": 52104,
+          "input_tokens": 54270,
+          "output_tokens": 6343,
+          "questions": 359,
+          "branches": 359,
+          "requests": 60,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 18866.3,
+          "total_ms": 18866.3,
+          "decisions_per_request": 5.98
+        },
+        "examples": []
+      }
+    },
+    "mnli_ood": {
+      "qwen_trained": {
+        "dataset": "mnli_ood",
+        "split": "test",
+        "n_items": 400,
+        "n_decisions": 1186,
+        "overall": {
+          "n": 1186,
+          "accuracy": 0.8069139966273187,
+          "mean_top_probability": 0.8186544650069376,
+          "ece": 0.014649363005342213,
+          "wilson95": [
+            0.7834726797399436,
+            0.8283734685204633
+          ],
+          "mean_probability_of_correct_answer": 0.7275128236790547,
+          "nll": 0.5652853434091096,
+          "brier": 0.28992090165913753,
+          "balanced_accuracy": 0.8038641767954702
+        },
+        "by_question": {
+          "h0": {
+            "n": 400,
+            "accuracy": 0.8075,
+            "mean_top_probability": 0.8132957175374032,
+            "ece": 0.02733521401882171,
+            "wilson95": [
+              0.766010151768214,
+              0.8431395742629825
+            ],
+            "mean_probability_of_correct_answer": 0.7224553218542132,
+            "nll": 0.5543007153549779,
+            "brier": 0.29263334137030483,
+            "balanced_accuracy": 0.8058292282430214
+          },
+          "h1": {
+            "n": 400,
+            "accuracy": 0.82,
+            "mean_top_probability": 0.8241077078133822,
+            "ece": 0.027543795034289373,
+            "wilson95": [
+              0.7793616474280234,
+              0.8545502625881809
+            ],
+            "mean_probability_of_correct_answer": 0.7399541445559589,
+            "nll": 0.5523750485998459,
+            "brier": 0.27410335307257994,
+            "balanced_accuracy": 0.8131522175396348
+          },
+          "h2": {
+            "n": 386,
+            "accuracy": 0.7927461139896373,
+            "mean_top_probability": 0.8185565423780155,
+            "ece": 0.025810428388378145,
+            "wilson95": [
+              0.7495205950530999,
+              0.8302020410124202
+            ],
+            "mean_probability_of_correct_answer": 0.7198611977183679,
+            "nll": 0.5900469215058923,
+            "brier": 0.3035013253642045,
+            "balanced_accuracy": 0.7973129755334627
+          }
+        },
+        "usage": {
+          "state_tokens": 13339,
+          "question_tokens": 102005,
+          "input_tokens": 115344,
+          "output_tokens": 21762,
+          "questions": 1186,
+          "branches": 1186,
+          "requests": 400,
+          "state_cache_hits": 0,
+          "prefill_ms": 0.0,
+          "branch_ms": 46695.0,
+          "total_ms": 46695.0,
+          "decisions_per_request": 2.96
+        },
+        "examples": []
+      }
+    }
+  }
+}

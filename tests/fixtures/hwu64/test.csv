@@ -1,0 +1,5 @@
+answer,scenario,intent,utterance
+Set an alarm for seven am,alarm,alarm_set,set an alarm for seven am
+What is the weather in London,calendar,calendar_query,what is the weather in london
+Play some jazz,play,play_music,play some jazz
+Cancel my alarm,alarm,alarm_remove,cancel my alarm

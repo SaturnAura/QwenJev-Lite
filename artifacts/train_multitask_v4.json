@@ -1,0 +1,123 @@
+{
+  "model_dir": "models\\qwenjev-multitask-v2",
+  "backbone": "C:\\qwen3.5-4B",
+  "readout": "slot_head",
+  "objective": "log_loss",
+  "balance": "none",
+  "tasks": {
+    "arguana_rel_bool": {
+      "items": 50,
+      "decisions": 250
+    },
+    "arguana_rel_choice": {
+      "items": 149,
+      "decisions": 149
+    },
+    "arguana_rel_score": {
+      "items": 50,
+      "decisions": 250
+    },
+    "fever": {
+      "items": 250,
+      "decisions": 250
+    },
+    "fever_support": {
+      "items": 250,
+      "decisions": 250
+    },
+    "goemotions": {
+      "items": 9,
+      "decisions": 252
+    },
+    "goemotions_sentiment": {
+      "items": 250,
+      "decisions": 250
+    },
+    "intentgrasp": {
+      "items": 250,
+      "decisions": 250
+    },
+    "jigsaw": {
+      "items": 42,
+      "decisions": 252
+    },
+    "jigsaw_severity": {
+      "items": 250,
+      "decisions": 250
+    },
+    "mmlu_pro": {
+      "items": 70,
+      "decisions": 70
+    },
+    "mnli": {
+      "items": 82,
+      "decisions": 252
+    },
+    "nfcorpus_rel_bool": {
+      "items": 42,
+      "decisions": 252
+    },
+    "nfcorpus_rel_choice": {
+      "items": 150,
+      "decisions": 150
+    },
+    "nfcorpus_rel_score": {
+      "items": 42,
+      "decisions": 252
+    },
+    "scidocs_rel_bool": {
+      "items": 42,
+      "decisions": 252
+    },
+    "scidocs_rel_choice": {
+      "items": 150,
+      "decisions": 150
+    },
+    "scidocs_rel_score": {
+      "items": 42,
+      "decisions": 252
+    },
+    "scifact_rel_bool": {
+      "items": 49,
+      "decisions": 252
+    },
+    "scifact_rel_choice": {
+      "items": 150,
+      "decisions": 150
+    },
+    "scifact_rel_score": {
+      "items": 49,
+      "decisions": 252
+    },
+    "snli": {
+      "items": 67,
+      "decisions": 252
+    },
+    "truthfulqa": {
+      "items": 250,
+      "decisions": 250
+    },
+    "vihealthqa_rel_bool": {
+      "items": 42,
+      "decisions": 252
+    },
+    "vihealthqa_rel_choice": {
+      "items": 150,
+      "decisions": 150
+    },
+    "vihealthqa_rel_score": {
+      "items": 42,
+      "decisions": 252
+    }
+  },
+  "decisions_raw": 5843,
+  "decisions_used": 5843,
+  "epochs": 1,
+  "steps": 731,
+  "mean_loss": 1.1698566481724018,
+  "seconds": 308.9,
+  "lr": 0.0005,
+  "anchor": 0.01,
+  "batch_size": 8,
+  "seed": 0
+}

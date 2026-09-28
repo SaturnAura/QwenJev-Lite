@@ -1,0 +1,19 @@
+{
+  "train": [
+    ["what is the weather in paris", "weather"],
+    ["will it rain tomorrow", "weather"],
+    ["play some jazz music", "play_music"],
+    ["skip this song", "play_music"],
+    ["book a table for two", "restaurant_reservation"]
+  ],
+  "test": [
+    ["is it going to snow today", "weather"],
+    ["put on some rock music", "play_music"],
+    ["reserve a table at seven", "restaurant_reservation"],
+    ["i need a table for four", "restaurant_reservation"]
+  ],
+  "oos_test": [
+    ["how do i bake sourdough bread", "oos"],
+    ["what is the airspeed velocity of a swallow", "oos"]
+  ]
+}

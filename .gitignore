@@ -216,3 +216,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- QwenJev-lite ---------------------------------------------------------
+# Scratch space used while reproducing the essay's probes and training runs.
+_work/
+
+# Raw source data stays out of the repo (one file is 287 MB, over GitHub's 100 MB
+# per-file limit). The formatted train/test sets in data/ready are kept: 55 MB of
+# JSONL, about 6 MB once git compresses it, and they are what train.py/test.py read.
+data/raw/
+docs/

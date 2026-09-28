@@ -1,0 +1,432 @@
+{
+  "generated_at": "2026-09-28T13:15:13+00:00",
+  "source_root": "D:\\AutoBM25\\dataset_en",
+  "out_dir": "data\\normalized",
+  "queries_per_task": 60,
+  "tasks": {
+    "arguana": {
+      "title": "relevance judgement: arguana",
+      "source": "D:\\AutoBM25\\dataset_en\\arguana",
+      "eval_split": "test",
+      "train_split": "test",
+      "splits": {
+        "bool_test": {
+          "file": "data\\normalized\\arguana_rel_bool_test.jsonl",
+          "items": 60,
+          "decisions": 300,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4"
+          ]
+        },
+        "bool_train": {
+          "file": "data\\normalized\\arguana_rel_bool_train.jsonl",
+          "items": 149,
+          "decisions": 745,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4"
+          ]
+        },
+        "choice_test": {
+          "file": "data\\normalized\\arguana_rel_choice_test.jsonl",
+          "items": 60,
+          "decisions": 60,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "choice_train": {
+          "file": "data\\normalized\\arguana_rel_choice_train.jsonl",
+          "items": 149,
+          "decisions": 149,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "score_test": {
+          "file": "data\\normalized\\arguana_rel_score_test.jsonl",
+          "items": 60,
+          "decisions": 300,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4"
+          ]
+        },
+        "score_train": {
+          "file": "data\\normalized\\arguana_rel_score_train.jsonl",
+          "items": 149,
+          "decisions": 745,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4"
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "scifact": {
+      "title": "relevance judgement: scifact",
+      "source": "D:\\AutoBM25\\dataset_en\\scifact",
+      "eval_split": "test",
+      "train_split": "train",
+      "splits": {
+        "bool_test": {
+          "file": "data\\normalized\\scifact_rel_bool_test.jsonl",
+          "items": 60,
+          "decisions": 306,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "bool_train": {
+          "file": "data\\normalized\\scifact_rel_bool_train.jsonl",
+          "items": 150,
+          "decisions": 768,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "choice_test": {
+          "file": "data\\normalized\\scifact_rel_choice_test.jsonl",
+          "items": 60,
+          "decisions": 60,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "choice_train": {
+          "file": "data\\normalized\\scifact_rel_choice_train.jsonl",
+          "items": 150,
+          "decisions": 150,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "score_test": {
+          "file": "data\\normalized\\scifact_rel_score_test.jsonl",
+          "items": 60,
+          "decisions": 306,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "score_train": {
+          "file": "data\\normalized\\scifact_rel_score_train.jsonl",
+          "items": 150,
+          "decisions": 768,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "nfcorpus": {
+      "title": "relevance judgement: nfcorpus",
+      "source": "D:\\AutoBM25\\dataset_en\\nfcorpus",
+      "eval_split": "test",
+      "train_split": "train",
+      "splits": {
+        "bool_test": {
+          "file": "data\\normalized\\nfcorpus_rel_bool_test.jsonl",
+          "items": 60,
+          "decisions": 355,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "bool_train": {
+          "file": "data\\normalized\\nfcorpus_rel_bool_train.jsonl",
+          "items": 150,
+          "decisions": 900,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "choice_test": {
+          "file": "data\\normalized\\nfcorpus_rel_choice_test.jsonl",
+          "items": 60,
+          "decisions": 60,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "choice_train": {
+          "file": "data\\normalized\\nfcorpus_rel_choice_train.jsonl",
+          "items": 150,
+          "decisions": 150,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "score_test": {
+          "file": "data\\normalized\\nfcorpus_rel_score_test.jsonl",
+          "items": 60,
+          "decisions": 355,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "score_train": {
+          "file": "data\\normalized\\nfcorpus_rel_score_train.jsonl",
+          "items": 150,
+          "decisions": 900,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "vihealthqa": {
+      "title": "relevance judgement: vihealthqa",
+      "source": "D:\\AutoBM25\\dataset_en\\vihealthqa",
+      "eval_split": "test",
+      "train_split": "train",
+      "splits": {
+        "bool_test": {
+          "file": "data\\normalized\\vihealthqa_rel_bool_test.jsonl",
+          "items": 60,
+          "decisions": 359,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "bool_train": {
+          "file": "data\\normalized\\vihealthqa_rel_bool_train.jsonl",
+          "items": 150,
+          "decisions": 900,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "choice_test": {
+          "file": "data\\normalized\\vihealthqa_rel_choice_test.jsonl",
+          "items": 60,
+          "decisions": 60,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "choice_train": {
+          "file": "data\\normalized\\vihealthqa_rel_choice_train.jsonl",
+          "items": 150,
+          "decisions": 150,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "score_test": {
+          "file": "data\\normalized\\vihealthqa_rel_score_test.jsonl",
+          "items": 60,
+          "decisions": 359,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "score_train": {
+          "file": "data\\normalized\\vihealthqa_rel_score_train.jsonl",
+          "items": 150,
+          "decisions": 900,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "scidocs": {
+      "title": "relevance judgement: scidocs",
+      "source": "D:\\AutoBM25\\dataset_en\\scidocs",
+      "eval_split": "test",
+      "train_split": "test",
+      "splits": {
+        "bool_test": {
+          "file": "data\\normalized\\scidocs_rel_bool_test.jsonl",
+          "items": 60,
+          "decisions": 360,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "bool_train": {
+          "file": "data\\normalized\\scidocs_rel_bool_train.jsonl",
+          "items": 150,
+          "decisions": 900,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "choice_test": {
+          "file": "data\\normalized\\scidocs_rel_choice_test.jsonl",
+          "items": 60,
+          "decisions": 60,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "choice_train": {
+          "file": "data\\normalized\\scidocs_rel_choice_train.jsonl",
+          "items": 150,
+          "decisions": 150,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "score_test": {
+          "file": "data\\normalized\\scidocs_rel_score_test.jsonl",
+          "items": 60,
+          "decisions": 360,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "score_train": {
+          "file": "data\\normalized\\scidocs_rel_score_train.jsonl",
+          "items": 150,
+          "decisions": 900,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "trec-covid": {
+      "title": "relevance judgement: trec-covid",
+      "source": "D:\\AutoBM25\\dataset_en\\trec-covid",
+      "eval_split": "test",
+      "train_split": "test",
+      "splits": {
+        "bool_test": {
+          "file": "data\\normalized\\trec-covid_rel_bool_test.jsonl",
+          "items": 50,
+          "decisions": 300,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        },
+        "choice_test": {
+          "file": "data\\normalized\\trec-covid_rel_choice_test.jsonl",
+          "items": 50,
+          "decisions": 50,
+          "question_ids": [
+            "passage"
+          ]
+        },
+        "score_test": {
+          "file": "data\\normalized\\trec-covid_rel_score_test.jsonl",
+          "items": 50,
+          "decisions": 300,
+          "question_ids": [
+            "d0",
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5"
+          ]
+        }
+      },
+      "status": "ok"
+    }
+  }
+}
