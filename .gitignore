@@ -230,3 +230,4 @@ models/_*/
 # JSONL, about 6 MB once git compresses it, and they are what train.py/test.py read.
 data/raw/
 docs/
+_msg.txt
