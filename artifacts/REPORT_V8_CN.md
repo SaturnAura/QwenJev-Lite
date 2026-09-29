@@ -85,18 +85,25 @@
 
 ---
 
-## 2. 最终模型：共享行 + 宽空间私有行
+## 2. 最终模型：一个答案一块行
 
-两个部件各有主场，因此交付模型是二者的结构式拼接（`scripts/compose_wide_rows.py`）：
+交付模型由 `scripts/compose_wide_rows.py` 拼装，625 行分三段：
 
-* 选项数 ≤ 26 的标签空间（字母行够用）：沿用已训练的共享行（V7 的 α=0.5 读出）；
-* 选项数 > 26 的标签空间（字母行不够）：读原型私有行。
+* **第 0–26 行**保持**预训练**的字母行（加一条中性行）。这是"没见过的答案"的回落位置，
+  也就是 backbone 自己的判断。副作用很关键：`python demo.py --model-dir ...` 里那个
+  训练集里没有的 escalate 问题，仍然给出预训练读出的答案（yes 0.93），
+  而不是被共享训练行的偏好带跑；
+* **每个训练覆盖过的标签空间都有自己的行块**，宽度不限：
+  * 选项数 ≤ 26：按"该选项在标注文件里的位置"从已训练的共享行里拷贝（等价于 V7 的行为）；
+  * 选项数 > 26：用原型行（§1.5）。
+  位置是按**训练文件里的 criteria 顺序**取的，不能用字母序——FEVER 的
+  `supports/refutes/not_enough_info` 就不是字母序，按字母序取会张冠李戴；
+* 其余答案继续回落到第 0–26 行。
 
-拼接是**严格扩展**：表里有的答案读自己的行，其余答案仍然回落到原来的位置行，
-所以 ≤26 选项的所有任务数字与旧模型逐位相同。
-
-新模型文件：`models/qwenjev-multitask-v2/readout.pt`（547 行 = 256 共享 + 291 私有），
-卡片 `card.json` 里记了 `composed_from` 与行数。
+于是：所有被测试覆盖的标签空间读到的行与 V8 全量测试完全一致（dev 切片 25 个任务逐位相同），
+而真正没见过的标签空间回到零样本行为。新模型文件
+`models/qwenjev-multitask-v2/readout.pt`（625 行 = 27 保留 + 598 私有，90 个标签空间），
+卡片 `card.json` 记了 `composed_from`、行数与答案数。
 
 ---
 
@@ -136,7 +143,7 @@
 | hwu64 | choice | 0.345 | – | **0.542** |
 | hwu64_top15 | choice | 0.600 | **0.613** | 0.467 |
 | intentgrasp | choice | 0.315 | **0.323** | 0.302 |
-| mmlu_pro | choice | 0.133 | **0.393** | 0.365 |
+| mmlu_pro | choice | 0.133 | **0.393** | 0.362 |
 | mnli | choice | 0.582 | **0.792** | 0.782 |
 | mnli_ood | choice | 0.596 | **0.824** | 0.808 |
 | nfcorpus_rel_choice | choice | 0.333 | 0.617 | **0.733** |
@@ -184,9 +191,16 @@ python train.py --no-balance --epochs 0 --items-per-label 12 --min-items-per-tas
   --prototype-init --row-norm-cap auto --optimizer sgd --max-grad-norm 0 \
   --model-dir models/_p3 --report artifacts/_p3.json     # 见 §1.5
 
-# 4) 把原型行接到共享行上（只接 >26 选项的标签空间）
+# 4a) 共享行的 α=0.5 混合（scripts/interpolate.py 会写出混合后的读出）
+python scripts/interpolate.py --checkpoint models/_v7/readout.pt --alphas 0.5 \
+  --tasks scifact_rel_bool arguana_rel_bool jigsaw goemotions mnli snli \
+          banking77_top15 clinc150_top15 mmlu_pro scifact_rel_score jigsaw_severity \
+  --out models/_v7a05/readout.pt
+
+# 4b) 拼装交付模型：0–26 行保持预训练字母行，每个训练过的标签空间各拿一块私有行
+#     （<=26 选项的按标注文件里的位置从共享训练行拷贝，>26 选项的用原型行）
 python scripts/compose_wide_rows.py \
-  --base models/_v7/readout.pt --wide models/_p3/readout.pt \
+  --base models/_v7a05/readout.pt --wide models/_p3/readout.pt --data-dir data/ready \
   --out models/qwenjev-multitask-v2/readout.pt
 
 # 5) 全量对比测试（33 个测试集 × Laya / 零样本 / 训练后，约 39 分钟）

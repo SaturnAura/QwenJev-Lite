@@ -138,7 +138,7 @@ a claim at the head of the state.
 | `jigsaw` | comment | six independent yes/no labels | 2000 / 400 |
 | `goemotions` | comment | 28 independent yes/no emotions | 2000 / 400 |
 | `truthfulqa` | question | 5-way: the best answer against four false ones | 577 / 240 |
-| `mmlu_pro` | category + question stem | 10-way choice | 70 / 400 |
+| `mmlu_pro` | category + question stem | 10-way choice | 70 official + 6000 taken from its unused test rows / 400 |
 | `intentgrasp` | user utterance | choice over that item's own option list | 2000 / 400 |
 | `clinc150`, `hwu64` | utterance | 150-way / 64-way intent | 4000 / 400 |
 | `banking77` | utterance | 77-way intent | 370 / 400 |

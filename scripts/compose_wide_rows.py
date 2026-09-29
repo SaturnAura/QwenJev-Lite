@@ -1,22 +1,25 @@
-"""Merge two readouts: the shared reserved rows, plus private rows for wide label spaces.
+"""Compose the shipped readout: private rows per label space, on the reserved rows.
 
 The trained slot head answers a question with the row for each option's *position*,
 which means it can only serve label spaces the reserved letter rows cover (``K <= 26``).
 A 150-way intent task needs more rows than exist: under the positional scheme its last
 124 options compete for one row, which is why CLINC150 sat at 0.077.
 
-This script keeps the trained head exactly as it is for every label space the reserved
-rows cover, and appends the rows another run estimated for label spaces wider than that
-budget (``scripts/…`` uses :meth:`qwenjev.rlcd.RLCDFineTune.prototypes`, the mean state
-of each answer, which needs a single forward pass and no gradient steps).
+The composed head has three parts:
+
+* rows ``0 .. SLOT_RESERVE-1`` stay the *pretrained* label rows, so an answer the head
+  has never seen reads what the backbone itself would say - the behaviour that keeps
+  ``python demo.py`` honest on a brand-new question;
+* every label space the training mix covered, of any width, gets its own block: rows
+  copied from the trained head by position where the reserved budget covered it, and
+  prototype rows (the mean state of each answer, one forward pass, no gradient steps)
+  where it did not;
+* an answer in none of those blocks still falls back to its reserved row.
 
     python scripts/compose_wide_rows.py \\
-        --base models/qwenjev-multitask-v2/readout.pt \\
+        --base models/_v7/readout.pt \\
         --wide models/_p3/readout.pt \\
         --out models/qwenjev-multitask-v2/readout.pt
-
-The result is a strict extension: answers that are in the table read their own row, and
-every other answer keeps falling back to the positional row it used before.
 """
 
 from __future__ import annotations
@@ -31,7 +34,7 @@ import torch
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from qwenjev.schema import FAMILY_SEP, SLOT_LETTERS  # noqa: E402
+from qwenjev.schema import FAMILY_SEP, SLOT_LETTERS, SLOT_RESERVE  # noqa: E402
 
 
 def label_space_size(answer: str) -> int:
@@ -41,13 +44,39 @@ def label_space_size(answer: str) -> int:
     return max(1, len(answer.split(FAMILY_SEP)) - 3)
 
 
+def option_positions(data_dir: Path) -> dict[str, int]:
+    """Where each answer sits inside the row it was trained on.
+
+    The trained head reads a row by the option's position in its rendered list, so the
+    position has to come from the order the normaliser actually wrote the criteria in -
+    which is not always sorted (FEVER's is ``supports / refutes / not_enough_info``).
+    """
+
+    positions: dict[str, int] = {}
+    for path in sorted(data_dir.glob("*_train.jsonl")):
+        with path.open(encoding="utf-8") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                record = json.loads(line)
+                for question_id, spec in record["questions"].items():
+                    criteria = spec.get("criteria") or {}
+                    if not isinstance(criteria, dict):
+                        continue
+                    space = FAMILY_SEP.join(sorted(str(key) for key in criteria))
+                    prefix = f"{spec.get('type', 'choice')}{FAMILY_SEP}{question_id}{FAMILY_SEP}{space}"
+                    for index, key in enumerate(criteria):
+                        positions.setdefault(f"{prefix}{FAMILY_SEP}{key}", index)
+    return positions
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--base", required=True, help="checkpoint that keeps the shared rows")
-    parser.add_argument("--wide", required=True, help="checkpoint with rows for wide label spaces")
+    parser.add_argument("--base", required=True, help="checkpoint holding the trained positional rows")
+    parser.add_argument("--wide", required=True, help="checkpoint holding the reserved + prototype rows")
     parser.add_argument("--out", required=True)
-    parser.add_argument("--min-options", type=int, default=len(SLOT_LETTERS) + 1,
-                        help="copy answers from label spaces larger than this")
+    parser.add_argument("--data-dir", default=str(ROOT / "data" / "ready"),
+                        help="formatted train files, read for the option order of each label space")
     parser.add_argument("--source", default=None, help="card.json to record the merge in")
     args = parser.parse_args()
 
@@ -57,37 +86,45 @@ def main() -> int:
     wide_weight = wide["readout"]["proj.weight"].float()
     wide_table = wide.get("slot_table") or {}
 
-    copied = {}
-    cursor = base_weight.shape[0]
+    positions = option_positions(Path(args.data_dir))
+    head = wide_weight[:SLOT_RESERVE].clone()  # pretrained label rows + neutral row
     new_rows = []
+    table: dict[str, int] = {}
+    unplaced = 0
     for answer, row in sorted(wide_table.items(), key=lambda kv: (label_space_size(kv[0]), kv[0])):
-        if label_space_size(answer) <= args.min_options:
-            continue
-        copied[answer] = cursor + len(new_rows)
-        new_rows.append(wide_weight[row])
+        if label_space_size(answer) > len(SLOT_LETTERS):
+            new_rows.append(wide_weight[row])
+        else:
+            index = positions.get(answer)
+            if index is None or index >= base_weight.shape[0]:
+                unplaced += 1
+                continue
+            new_rows.append(base_weight[index])
+        table[answer] = SLOT_RESERVE + len(new_rows) - 1
     if not new_rows:
-        raise SystemExit("no wide label space found in the second checkpoint")
-    weight = torch.cat([base_weight, torch.stack(new_rows)], dim=0)
-    print(
-        f"base rows {base_weight.shape[0]} + {len(new_rows)} private rows "
-        f"for {len({a.rsplit(FAMILY_SEP, 1)[0] for a in copied})} label spaces "
-        f"-> {weight.shape[0]} rows"
-    )
+        raise SystemExit("no label space found in the prototype checkpoint")
 
-    table = dict(base.get("slot_table") or {})
-    table.update(copied)
-    state = dict(base["readout"])
+    weight = torch.cat([head, torch.stack(new_rows)], dim=0)
+    print(
+        f"{SLOT_RESERVE} reserved rows + {len(new_rows)} private rows for "
+        f"{len({a.rsplit(FAMILY_SEP, 1)[0] for a in table})} label spaces -> {weight.shape[0]} rows"
+    )
+    if unplaced:
+        print(f"  {unplaced} answers had no position in {args.data_dir}; they keep their reserved row")
+
+    state = dict(wide["readout"])
     state["proj.weight"] = weight
     payload = {
         "readout": state,
-        "readout_name": base.get("readout_name", "slot_head"),
-        "temperature": float(base.get("temperature", 1.0)),
+        "readout_name": wide.get("readout_name", "slot_head"),
+        "temperature": float(wide.get("temperature", 1.0)),
         "slot_table": table,
         "composed_from": {
             "base": str(args.base),
             "wide": str(args.wide),
-            "wide_answers": len(copied),
-            "min_options": args.min_options,
+            "answers": len(table),
+            "reserved": SLOT_RESERVE,
+            "unplaced": unplaced,
         },
     }
     out = Path(args.out)
