@@ -71,22 +71,38 @@ def main() -> int:
             items = items[::stride][: args.limit]
         line = {"task": task}
         for name, backend in (("zero", zero), ("trained", trained)):
-            summary = evaluate_items(
-                backend, items, dataset=task, batch_size=args.batch, progress=False
-            ).summary()
+            try:
+                summary = evaluate_items(
+                    backend, items, dataset=task, batch_size=args.batch, progress=False
+                ).summary()
+            except Exception as exc:  # a readout that cannot answer this label space
+                line[name] = float("nan")
+                line[f"{name}_ece"] = float("nan")
+                line[f"{name}_error"] = f"{type(exc).__name__}: {exc}"
+                continue
             line[name] = summary["overall"]["accuracy"]
             line[f"{name}_ece"] = summary["overall"]["ece"]
         rows.append(line)
 
     print(f"\n{'task':<22} {'zero':>7} {'trained':>8} {'delta':>7}")
+    def fmt(value: float) -> str:
+        return "n/a" if value != value else f"{value:.3f}"
+
     for row in rows:
+        delta = row["trained"] - row["zero"]
+        delta_text = "n/a" if delta != delta else f"{delta:+.3f}"
         print(
-            f"{row['task']:<22} {row['zero']:>7.3f} {row['trained']:>8.3f} "
-            f"{row['trained']-row['zero']:>+7.3f}"
+            f"{row['task']:<22} {fmt(row['zero']):>7} {fmt(row['trained']):>8} "
+            f"{delta_text:>7}"
         )
-    zero_mean = sum(r["zero"] for r in rows) / len(rows)
-    trained_mean = sum(r["trained"] for r in rows) / len(rows)
+    paired = [r for r in rows if r["zero"] == r["zero"] and r["trained"] == r["trained"]]
+    zero_mean = sum(r["zero"] for r in paired) / len(paired)
+    trained_mean = sum(r["trained"] for r in paired) / len(paired)
     print(f"{'MEAN':<22} {zero_mean:>7.3f} {trained_mean:>8.3f} {trained_mean-zero_mean:>+7.3f}")
+    mean = sum(r["trained"] for r in rows if r["trained"] == r["trained"]) / max(
+        1, len([r for r in rows if r["trained"] == r["trained"]])
+    )
+    print(f"{'MEAN (trained, all tasks)':<22} {'':>7} {mean:>8.3f}")
     return 0
 
 

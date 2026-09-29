@@ -14,7 +14,7 @@ from .config import JevLimits, QwenJevConfig
 from .confidence import billing_output_tokens, summarise
 from .prompt import render_branch, render_state
 from .readout import Readout, build_readout
-from .schema import Question, QuestionType, build_question
+from .schema import Question, QuestionType, build_question, question_option_ids
 from .tokenize import TokenizedBranch, tokenize_branch
 
 
@@ -96,12 +96,23 @@ class QwenJevLite:
         if lm_head is None:  # pragma: no cover - defensive
             raise ValueError("backbone has no output embedding / lm_head")
         hidden_size = int(model.config.text_config.hidden_size)
-        self.readout: Readout = build_readout(
-            self.config.readout, tokenizer, lm_head, hidden_size, max_slots=self.limits.max_slots
-        ).to(self.device)
-        self.readout.eval()
+        # A checkpoint fixes the width of its own head (older runs used 256 rows), so
+        # read it before building the module rather than after.
+        state = None
         if self.config.readout_checkpoint:
             state = torch.load(self.config.readout_checkpoint, map_location=self.device)
+        max_slots = self.limits.max_slots
+        if state is not None and isinstance(state.get("readout"), dict):
+            rows = state["readout"].get("proj.weight")
+            if rows is not None:
+                # The checkpoint fixes the width of its own head, whatever the config
+                # default is: a head trained with 256 rows must still load.
+                max_slots = int(rows.shape[0])
+        self.readout: Readout = build_readout(
+            self.config.readout, tokenizer, lm_head, hidden_size, max_slots=max_slots
+        ).to(self.device)
+        self.readout.eval()
+        if state is not None:
             trained_with = state.get("readout_name")
             if trained_with and trained_with != self.readout.name:
                 raise ValueError(
@@ -110,6 +121,8 @@ class QwenJevLite:
                     f"pass readout={trained_with!r} as well"
                 )
             self.readout.load_state_dict(state["readout"])
+            if hasattr(self.readout, "set_slot_table"):
+                self.readout.set_slot_table(state.get("slot_table"))
             self.readout_temperature = float(state.get("temperature", 1.0))
         else:
             self.readout_temperature = 1.0
@@ -251,12 +264,13 @@ class QwenJevLite:
         ]
         return decision, option_hidden
 
-    def _score(self, decision, option_hidden, branches: Sequence[TokenizedBranch]):
+    def _score(self, decision, option_hidden, branches: Sequence[TokenizedBranch], questions):
         labels = [list(b.labels) for b in branches]
         return self.readout.score(
             decision,
             labels=labels,
             option_hidden=option_hidden if self.readout.uses_option_states else None,
+            option_ids=[question_option_ids(q) for q in questions],
         )
 
     def _probabilities(self, logits):
@@ -343,10 +357,14 @@ class QwenJevLite:
                 for i, (ri, bi) in enumerate(chunk)
             ]
             labels = [list(prepared[ri][2][bi].labels) for ri, bi in chunk]
+            option_ids = [
+                question_option_ids(prepared[ri][3][bi]) for ri, bi in chunk
+            ]
             logits = self.readout.score(
                 decision,
                 labels=labels,
                 option_hidden=option_hidden if self.readout.uses_option_states else None,
+                option_ids=option_ids,
             )
             probabilities = torch.softmax(logits.raw_logits / self.readout_temperature, dim=-1)
             for i, (ri, bi) in enumerate(chunk):
@@ -482,7 +500,12 @@ class QwenJevLite:
         for chunk in self._chunk_branches(branches):
             requests_made += 1
             decision, option_hidden = self._run_branches(prefix_cache, state_ids, chunk)
-            logits = self._score(decision, option_hidden, chunk)
+            logits = self._score(
+                decision,
+                option_hidden,
+                chunk,
+                question_list[index : index + len(chunk)],
+            )
             probabilities = self._probabilities(logits)
             for i, (question, branch) in enumerate(
                 zip(question_list[index : index + len(chunk)], chunk)

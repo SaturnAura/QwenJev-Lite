@@ -8,7 +8,10 @@ are implemented here:
 * :class:`ReservedLabelReadout` reads the mass the pretrained LM head puts on the
   reserved option-label tokens (works out of the box, ``K <= 26``);
 * :class:`SlotHeadReadout` is the dedicated ``K``-slot head, initialised from those
-  same reserved rows and then trained against outcomes by :mod:`qwenjev.rlcd`;
+  same reserved rows and then trained against outcomes by :mod:`qwenjev.rlcd`. A row
+  is addressed by the *answer it stands for* (see :func:`qwenjev.schema.option_ids`),
+  so a trained task only moves the rows of its own answers and the reserved letter
+  rows stay untouched as the fallback for answers the head never met;
 * :class:`PointerReadout` scores each option's own final hidden state against the
   decision position ("pointer-style scorer", essay section 4).
 
@@ -24,7 +27,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .schema import SLOT_LETTERS
+from .schema import SLOT_LETTERS, SLOT_RESERVE, SLOT_UNKNOWN_ROW
 
 
 @dataclass
@@ -54,6 +57,7 @@ class Readout(nn.Module):
         *,
         labels: list[list[str]],
         option_hidden: list[torch.Tensor] | None = None,
+        option_ids: list[list[str]] | None = None,
     ) -> ReadoutLogits:  # pragma: no cover - interface
         raise NotImplementedError
 
@@ -101,6 +105,7 @@ class ReservedLabelReadout(Readout):
         *,
         labels: list[list[str]],
         option_hidden: list[torch.Tensor] | None = None,
+        option_ids: list[list[str]] | None = None,
     ) -> ReadoutLogits:
         device = decision_hidden.device
         rows: list[torch.Tensor] = []
@@ -122,7 +127,13 @@ class ReservedLabelReadout(Readout):
 
 
 class SlotHeadReadout(Readout):
-    """Dedicated ``K``-slot head: ``z_k = w_k . h + b_k`` (essay section 1)."""
+    """Dedicated ``K``-slot head: ``z_k = w_k . h + b_k`` (essay section 1).
+
+    Rows ``0 .. SLOT_RESERVE-1`` are the pretrained label rows (plus one neutral row).
+    Every answer that was seen during training gets its own row past that reserve
+    through :meth:`set_slot_table`, which is what stops one task from overwriting the
+    rows another one reads.
+    """
 
     name = "slot_head"
 
@@ -131,11 +142,57 @@ class SlotHeadReadout(Readout):
         self.max_options = max_slots - 1  # the API caps requests at 255 options
         self.proj = nn.Linear(hidden_size, max_slots, bias=False)
         self.max_slots = max_slots
+        self.slot_table: dict[str, int] = {}
         with torch.no_grad():
             self.proj.weight.zero_()
             if init_weight is not None:
                 n = min(init_weight.shape[0], max_slots)
                 self.proj.weight[:n] = init_weight[:n].to(self.proj.weight.dtype)
+
+    def set_slot_table(self, table: "dict[str, int] | None") -> None:
+        """Bind every known answer id to the row that scores it."""
+
+        self.slot_table = {str(k): int(v) for k, v in (table or {}).items()}
+
+    def load_rows(self, rows: "dict[str, torch.Tensor]", *, cap: "float | None" = None) -> int:
+        """Write one row per answer id (see :meth:`qwenjev.rlcd.RLCDFineTune.prototypes`).
+
+        ``cap`` rescales the whole table with a single factor rather than normalising
+        each row: the *relative* size of the rows is information (it is the class
+        geometry of the label space), and normalising a row whose mean deviation is
+        tiny would magnify its noise into a full-strength opinion.
+        """
+
+        written = 0
+        with torch.no_grad():
+            weight = self.proj.weight
+            scale = 1.0
+            if cap and rows:
+                norms = torch.stack([vector.detach().float().norm() for vector in rows.values()])
+                mean = float(norms.mean())
+                if mean > 0:
+                    scale = cap / mean
+            for answer, vector in rows.items():
+                row = self.slot_table.get(answer)
+                if row is None or row >= self.max_slots:
+                    continue
+                vector = vector.detach().to(weight.device, weight.dtype)
+                if vector.shape[0] != weight.shape[1]:
+                    raise ValueError(f"row {answer!r} has {vector.shape[0]} dims, expected {weight.shape[1]}")
+                weight[row] = vector * scale
+                written += 1
+        return written
+
+    def row_for(self, option_id: str | None, position: int) -> int:
+        """Row that scores one option: its trained row, else its reserved letter row."""
+
+        row = self.slot_table.get(option_id) if option_id else None
+        if row is None or row >= self.max_slots:
+            # Unknown label space: read the pretrained letter rows by position, and a
+            # single neutral row for anything past them. Never a row some other label
+            # space trained.
+            return position if position < len(SLOT_LETTERS) else SLOT_UNKNOWN_ROW
+        return row
 
     @property
     def weight(self) -> torch.Tensor:
@@ -147,9 +204,17 @@ class SlotHeadReadout(Readout):
         *,
         labels: list[list[str]],
         option_hidden: list[torch.Tensor] | None = None,
+        option_ids: list[list[str]] | None = None,
     ) -> ReadoutLogits:
         all_logits = decision_hidden.float() @ self.proj.weight.float().T
-        rows = [all_logits[i, : len(row_labels)] for i, row_labels in enumerate(labels)]
+        rows = []
+        for i, row_labels in enumerate(labels):
+            ids = option_ids[i] if option_ids else None
+            columns = [
+                self.row_for(ids[j] if ids and j < len(ids) else None, j)
+                for j in range(len(row_labels))
+            ]
+            rows.append(all_logits[i, torch.tensor(columns, device=all_logits.device)])
         return ReadoutLogits(
             log_probs=self._renormalise(rows, decision_hidden.device),
             raw_logits=self._pad_rows(rows, decision_hidden.device),
@@ -178,6 +243,7 @@ class PointerReadout(Readout):
         *,
         labels: list[list[str]],
         option_hidden: list[torch.Tensor] | None = None,
+        option_ids: list[list[str]] | None = None,
     ) -> ReadoutLogits:
         assert option_hidden is not None, "pointer readout needs per-option hidden states"
         q = self.query(decision_hidden.float())
@@ -192,7 +258,12 @@ class PointerReadout(Readout):
 
 
 def build_readout(
-    name: str, tokenizer, lm_head: nn.Linear, hidden_size: int, max_slots: int = 256
+    name: str,
+    tokenizer,
+    lm_head: nn.Linear,
+    hidden_size: int,
+    max_slots: int = 256,
+    slot_table: "dict[str, int] | None" = None,
 ) -> Readout:
     if name == "reserved_label":
         return ReservedLabelReadout(tokenizer, lm_head)
@@ -203,7 +274,9 @@ def build_readout(
     except Exception:  # pragma: no cover - tokenizer specific
         init = None
     if name == "slot_head":
-        return SlotHeadReadout(hidden_size, max_slots=max_slots, init_weight=init)
+        readout = SlotHeadReadout(hidden_size, max_slots=max_slots, init_weight=init)
+        readout.set_slot_table(slot_table)
+        return readout
     if name == "pointer":
         return PointerReadout(hidden_size, max_slots=max_slots, init_weight=init)
     raise ValueError(f"unknown readout {name!r}")

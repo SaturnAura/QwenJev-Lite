@@ -1,0 +1,32 @@
+﻿Fix why the choice questions barely improved: private readout rows per answer
+
+Diagnosis (all measured, artifacts/REPORT_V8_CN.md):
+- the slot head picked a row by the option's position, so training a 2-4 option task
+  rewrote the rows a 10-15 option task reads (clinc150_top15 0.893 -> 0.733,
+  hwu64_top15 0.613 -> 0.467, intentgrasp 0.350 -> 0.225 while the trained tasks rose)
+- choice held only 14.7% of the gradient (goemotions alone gave 3360 decisions against
+  ~120 for a choice task)
+- the intent test sets were a label-sorted prefix: 400 items covered 40 of 77 classes
+- decision states have norm ~157 against 0.74 for the pretrained label rows, so one step
+  at lr 1e-3 moved a fresh row a fifth of its useful length (mean training loss 33.0
+  against 5.01 for a uniform head)
+
+Fixes:
+- readout rows are private per (question, label space, answer); an answer the head never
+  saw still reads its pretrained letter row, so unseen label spaces keep zero-shot
+  behaviour exactly (tests/test_rlcd_tiny.py)
+- scripts/build_extra_splits.py adds the missing training splits (MMLU-Pro from its
+  unused test rows, CLINC150/HWU64 full-space and 15-intent subsets, BANKING77) and
+  refuses to write a split whose answers its test file would not read
+- normalize._iter_limited spreads the cap over the whole file instead of taking a prefix
+- trained rows are projected back to the reserved rows' norm (--row-norm-cap), SGD is the
+  default (Adam's per-coordinate scaling collapses a wide label space onto one direction),
+  gradient clipping is off (it scaled a norm-60 gradient down 60x)
+- train.py --prototype-init adds closed-form rows (the mean state of each answer) for
+  label spaces wider than the 26 reserved rows, and scripts/compose_wide_rows.py joins
+  them to the shared rows; the shipped head is that composition
+
+Full benchmark (33 test splits, one run): bool 0.794, choice 0.671 over 18 tasks
+(0.700 over the 15 the pretrained readout can answer), score 0.737, overall 0.713
+against Laya 0.424. BANKING77 0.495, CLINC150 0.542, HWU64 0.542 (were 0.100/0.077/0.225,
+on their old test files).

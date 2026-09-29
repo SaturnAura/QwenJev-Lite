@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+import os
 
 import numpy as np
 import torch
@@ -27,7 +28,7 @@ from .calibration import (
     summarise_reliability,
 )
 from .prompt import render_branch, render_state
-from .schema import build_question
+from .schema import FAMILY_SEP, SLOT_RESERVE, build_question, question_option_ids
 from .tokenize import tokenize_branch
 
 
@@ -158,6 +159,9 @@ class RLCDFineTune:
         seed: int = 0,
         balance: str = "none",
         anchor: float = 0.0,
+        row_norm_cap: float | None = None,
+        optimizer: str = "adamw",
+        momentum: float = 0.0,
     ):
         if objective not in {"log_loss", "brier"}:
             raise ValueError("objective must be 'log_loss' or 'brier'")
@@ -165,6 +169,8 @@ class RLCDFineTune:
             raise ValueError("balance must be 'none' or 'class'")
         if anchor < 0:
             raise ValueError("anchor must be >= 0")
+        if optimizer not in {"adamw", "sgd"}:
+            raise ValueError("optimizer must be 'adamw' or 'sgd'")
         self.engine = engine
         self.question_specs = question_specs
         self.objective = objective
@@ -173,6 +179,17 @@ class RLCDFineTune:
         # vocabulary rows, so anchoring keeps the trained head a *correction* of the
         # pretrained readout instead of a replacement that has to relearn every task.
         self.anchor = anchor
+        # The trained rows are projected back onto the logit scale of the reserved
+        # label rows after every step. Qwen3.5-4B's decision states have a norm of
+        # ~157 while those rows have a norm of ~0.74, so one step at lr 1e-3 moves a
+        # fresh row by a fifth of its whole useful length: without this the rows drift
+        # to a scale where the logits explode (we measured a mean training loss of 33
+        # on the many-option tasks). ``None`` leaves the rows unconstrained.
+        self.row_norm_cap = row_norm_cap
+        self._capped_rows: list[int] = []
+        if row_norm_cap:
+            table = getattr(engine.readout, "slot_table", None) or {}
+            self._capped_rows = sorted(set(table.values()))
         self.batch_size = batch_size
         self.max_grad_norm = max_grad_norm
         self.seed = seed
@@ -188,11 +205,22 @@ class RLCDFineTune:
             )
         self.trainable = trainable
         self._anchor_params = [p.detach().clone() for p in trainable] if anchor else []
-        self.optimizer = torch.optim.AdamW(
-            trainable,
-            lr=lr,
-            weight_decay=weight_decay,
-        )
+        # A row of a linear readout should end up along the mean of the states it has
+        # to answer for, which is exactly what SGD builds. Adam rescales every
+        # coordinate by its own second moment, so with a handful of samples per row
+        # the rows all drift toward ``sign(h)`` and become nearly parallel - measuring
+        # that cost us a mean loss of 15 on the many-option tasks against 5.0 for an
+        # untouched head. ``sgd`` is therefore the default for a fresh head.
+        if optimizer == "sgd":
+            # No momentum by default: with a row norm cap the row reaches the cap in a
+            # few steps, and momentum then drives it straight past a good direction at
+            # ~10x the gradient step (measured: the loss rose above the uniform loss).
+            self.optimizer = torch.optim.SGD(
+                trainable, lr=lr, weight_decay=weight_decay, momentum=momentum
+            )
+        else:
+            self.optimizer = torch.optim.AdamW(trainable, lr=lr, weight_decay=weight_decay)
+        self.optimizer_name = optimizer
 
     # -- data plumbing ---------------------------------------------------------
     def _specs(self, question_specs: dict[str, dict] | None) -> dict[str, dict]:
@@ -220,19 +248,31 @@ class RLCDFineTune:
                 raise ValueError(
                     f"target {sample.target!r} is not a criterion of {sample.question_id!r}"
                 )
-            prepared.append((state_ids, branch, keys.index(sample.target), keys))
+            prepared.append(
+                (
+                    state_ids,
+                    branch,
+                    keys.index(sample.target),
+                    keys,
+                    question_option_ids(question),
+                )
+            )
         return prepared
 
-    def _forward(self, rows) -> torch.Tensor:
-        """One padded batch of ``[state + branch]`` sequences; returns slot logits."""
+    def _forward(self, rows, *, return_hidden: bool = False):
+        """One padded batch of ``[state + branch]`` sequences.
+
+        Returns the slot logits, or ``(logits, decision states)`` when ``hidden`` is set
+        (the prototype initialiser needs the representation the readout sees).
+        """
 
         engine = self.engine
         device = engine.device
         pad_id = engine.tokenizer.pad_token_id or 0
-        length = max(len(s) + len(b) for s, b, _, _ in rows)
+        length = max(len(s) + len(b) for s, b, _, _, _ in rows)
         input_ids = torch.full((len(rows), length), pad_id, dtype=torch.long, device=device)
         mask = torch.zeros((len(rows), length), dtype=torch.long, device=device)
-        for i, (state_ids, branch, _, _) in enumerate(rows):
+        for i, (state_ids, branch, _, _, _) in enumerate(rows):
             s = len(state_ids)
             input_ids[i, :s] = torch.tensor(state_ids, device=device)
             input_ids[i, s : s + len(branch)] = torch.tensor(branch.ids, device=device)
@@ -244,19 +284,83 @@ class RLCDFineTune:
         decision = torch.stack(
             [
                 hidden[i, len(state_ids) + branch.decision_index]
-                for i, (state_ids, branch, _, _) in enumerate(rows)
+                for i, (state_ids, branch, _, _, _) in enumerate(rows)
             ]
         )
         option_hidden = [
             hidden[i, [len(state_ids) + j for j in branch.option_end_indices], :]
-            for i, (state_ids, branch, _, _) in enumerate(rows)
+            for i, (state_ids, branch, _, _, _) in enumerate(rows)
         ]
         logits = engine.readout.score(
             decision,
-            labels=[list(b.labels) for _, b, _, _ in rows],
+            labels=[list(b.labels) for _, b, _, _, _ in rows],
             option_hidden=option_hidden if engine.readout.uses_option_states else None,
+            option_ids=[ids for _, _, _, _, ids in rows],
         )
-        return logits.raw_logits
+        return (logits.raw_logits, decision) if return_hidden else logits.raw_logits
+
+    # -- initialisation --------------------------------------------------------
+    @torch.no_grad()
+    def prototypes(
+        self,
+        samples,
+        *,
+        question_specs: dict[str, dict] | None = None,
+        batch_size: int | None = None,
+        progress: bool = False,
+    ) -> dict[str, torch.Tensor]:
+        """One row per answer: the mean representation of the states that chose it.
+
+        A linear readout trained by gradient descent needs many passes to find those
+        directions: the loss is averaged over the options, so the part of every step
+        that actually separates the answers is a small correction to a large shared
+        term (measured: a mean training loss of 4.9 after 124 steps on a 150-option
+        label space, against 5.0 for an untouched head). The mean representation of an
+        answer's outcomes is the closed-form answer to the same question, needs a
+        single forward pass, and is exactly the shape the head already has. Each
+        row is centred within its own label space - the competition the row appears in
+        - and then rescaled, so it keeps the logit scale of the reserved rows.
+        """
+
+        from collections import defaultdict
+
+        rows = self._prepare(list(samples), question_specs)
+        batch_size = batch_size or self.batch_size
+        order = sorted(range(len(rows)), key=lambda i: len(rows[i][0]) + len(rows[i][1]))
+        batches = [order[start : start + batch_size] for start in range(0, len(order), batch_size)]
+        bar = None
+        if progress:
+            from tqdm.auto import tqdm
+
+            bar = tqdm(total=len(batches), desc="prototypes", unit="step")
+        answer_sum: dict[str, torch.Tensor] = defaultdict(lambda: None)
+        answer_count: dict[str, int] = defaultdict(int)
+        space_sum: dict[str, torch.Tensor] = defaultdict(lambda: None)
+        space_count: dict[str, int] = defaultdict(int)
+        for batch_indices in batches:
+            batch = [rows[i] for i in batch_indices]
+            _logits, decision = self._forward(batch, return_hidden=True)
+            for i, (_state, _branch, _target, _keys, ids) in enumerate(batch):
+                vector = decision[i].float().cpu()
+                # The row of an answer is the mean state of the samples that *chose*
+                # it; the space mean is over every sample that offered it.
+                chosen = ids[_target]
+                space = chosen.rsplit(FAMILY_SEP, 1)[0]
+                answer_sum[chosen] = (
+                    vector if answer_sum[chosen] is None else answer_sum[chosen] + vector
+                )
+                answer_count[chosen] += 1
+                space_sum[space] = vector if space_sum[space] is None else space_sum[space] + vector
+                space_count[space] += 1
+            if bar is not None:
+                bar.update(1)
+        if bar is not None:
+            bar.close()
+        return {
+            answer: answer_sum[answer] / answer_count[answer]
+            - space_sum[answer.rsplit(FAMILY_SEP, 1)[0]] / space_count[answer.rsplit(FAMILY_SEP, 1)[0]]
+            for answer in answer_sum
+        }
 
     # -- training --------------------------------------------------------------
     def train(
@@ -316,7 +420,28 @@ class RLCDFineTune:
                     [p for p in self.engine.readout.parameters() if p.requires_grad],
                     self.max_grad_norm,
                 )
+            if os.environ.get("QWENJEV_DEBUG_GRAD") and steps < 4:
+                flat = torch.cat(
+                    [
+                        p.grad.detach().flatten()
+                        for p in self.engine.readout.parameters()
+                        if p.requires_grad and p.grad is not None
+                    ]
+                )
+                options = max(len(r[3]) for r in batch)
+                print(
+                    f"  step {steps}: options={options:<4} |grad|={float(flat.norm()):12.1f} "
+                    f"|penalty|={float(loss.detach()):.3f}"
+                )
             self.optimizer.step()
+            if self.row_norm_cap and self._capped_rows:
+                with torch.no_grad():
+                    weight = self.engine.readout.proj.weight
+                    index = torch.tensor(self._capped_rows, device=weight.device)
+                    capped = weight.index_select(0, index)
+                    norms = capped.norm(dim=1, keepdim=True).clamp_min(1e-8)
+                    capped.mul_((self.row_norm_cap / norms).clamp(max=1.0))
+                    weight.index_copy_(0, index, capped)
             history.append(float(loss.detach()))
             steps += 1
             if bar is not None:
@@ -358,7 +483,7 @@ class RLCDFineTune:
             batch = rows[start : start + batch_size]
             logits = self._forward(batch)
             probs = torch.softmax(logits / self.engine.readout_temperature, dim=-1)
-            for i, (_, _, target_idx, keys) in enumerate(batch):
+            for i, (_, _, target_idx, keys, _family) in enumerate(batch):
                 row = probs[i, : len(keys)]
                 pred = int(row.argmax())
                 top_probabilities.append(float(row[pred]))
@@ -382,15 +507,54 @@ class RLCDFineTune:
 
     # -- persistence -----------------------------------------------------------
     def save(self, path: str) -> None:
+        table = getattr(self.engine.readout, "slot_table", None)
         torch.save(
             {
                 "readout": self.engine.readout.state_dict(),
                 "readout_name": self.engine.readout.name,
                 "temperature": float(self.engine.readout_temperature),
                 "objective": self.objective,
+                "slot_table": dict(table) if table else None,
             },
             path,
         )
+
+
+def build_slot_table(
+    samples,
+    *,
+    question_specs: dict[str, dict] | None = None,
+    max_slots: int = 1024,
+    reserve: int = SLOT_RESERVE,
+) -> tuple[dict[str, int], dict[str, int]]:
+    """Give every answer in ``samples`` its own row.
+
+    Returns ``(table, decisions_per_answer)``. Rows ``0 .. reserve-1`` are left alone:
+    they stay the pretrained label rows, which is where an answer that is *not* in the
+    table is read from. Without this, every task shares the rows at the front of the
+    matrix and the last task trained wins - which is exactly why a trained head used
+    to be worse than the pretrained one on the label spaces it never saw.
+    """
+
+    from collections import Counter
+
+    counts: "Counter[str]" = Counter()
+    for sample in samples:
+        spec = sample.spec if getattr(sample, "spec", None) else (question_specs or {}).get(
+            sample.question_id
+        )
+        if spec is None:
+            raise ValueError(f"no question spec for {sample.question_id!r}")
+        counts.update(question_option_ids(build_question(sample.question_id, spec)))
+
+    needed = reserve + len(counts)
+    if needed > max_slots:
+        raise ValueError(
+            f"this mix needs {needed} rows but the head has {max_slots}; drop a task or "
+            "raise JevLimits.max_slots"
+        )
+    table = {answer: reserve + index for index, answer in enumerate(sorted(counts))}
+    return table, dict(counts)
 
 
 def fit_temperature(engine, evaluation: Evaluation) -> float:

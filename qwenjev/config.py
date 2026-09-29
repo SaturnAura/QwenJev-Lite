@@ -26,8 +26,10 @@ class JevLimits:
     #: each question's identifier".
     billing_base_tokens: int = 4
     billing_tokens_per_answer: int = 15
-    #: Number of option slots the dedicated readout head is sized for.
-    max_slots: int = 256
+    #: Number of option slots the dedicated readout head is sized for. Every trained
+    #: label space gets a private block, so this has to hold the 26 reserved rows plus
+    #: one row per option of every label space in the training mix.
+    max_slots: int = 1024
 
 
 @dataclass

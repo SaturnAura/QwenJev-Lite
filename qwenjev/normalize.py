@@ -117,13 +117,21 @@ def _iter_limited(rows: Sequence[Any], limit: int | None):
 
     CLINC150 and HWU64 ship label-sorted parquet files and IntentGrasp is grouped by
     source corpus, so ``rows[:limit]`` can be a single class or a single corpus.
+    The indices are spread evenly over the whole file, which matters just as much when
+    ``limit`` is more than half of ``rows``: a stride of one used to keep only the
+    front of the file, so a 750-row label-sorted intent file was scored on its first
+    40 intents and never on the other 110.
     """
 
     total = len(rows)
     if not limit or limit >= total:
         return range(total)
     stride = max(1, total // limit)
-    return range(0, total, stride)
+    if stride > 1:
+        return range(0, total, stride)
+    # More than half of the file fits in the cap: stride 1 would take a prefix, so
+    # walk the file evenly instead.
+    return [round(index * total / limit) for index in range(limit)]
 
 
 def _split_rows(rows: Sequence[dict], key: Callable[[dict], str], test_fraction: float = 0.2):

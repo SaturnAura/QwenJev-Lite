@@ -221,6 +221,10 @@ __marimo__/
 # Scratch space used while reproducing the essay's probes and training runs.
 _work/
 
+# Experiment checkpoints: the shipped readout is models/qwenjev-multitask-v2, and
+# every other run is reproducible from the commands in artifacts/REPORT_V8_CN.md.
+models/_*/
+
 # Raw source data stays out of the repo (one file is 287 MB, over GitHub's 100 MB
 # per-file limit). The formatted train/test sets in data/ready are kept: 55 MB of
 # JSONL, about 6 MB once git compresses it, and they are what train.py/test.py read.

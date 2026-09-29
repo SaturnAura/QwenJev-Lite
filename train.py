@@ -23,11 +23,12 @@ from qwenjev.config import QwenJevConfig
 from qwenjev.datasets import items_to_samples
 from qwenjev.engine import QwenJevLite
 from qwenjev.normalize import load_normalized
-from qwenjev.rlcd import RLCDFineTune, _balance_samples
+from qwenjev.rlcd import RLCDFineTune, _balance_samples, build_slot_table
+from qwenjev.schema import SLOT_LETTERS, SLOT_RESERVE
 
-#: Long-option tasks whose label names are missing in the provided files; they cost the
-#: most time per step and teach the readout little, so they are skipped by default.
-DEFAULT_EXCLUDE = ("clinc150", "hwu64")
+#: No task is skipped by default now that every label space owns its own rows: the
+#: many-label intent tasks used to overwrite the rows the 15-label tasks read.
+DEFAULT_EXCLUDE: tuple[str, ...] = ()
 
 
 def discover_tasks(data_dir: Path, only: list[str] | None = None, exclude: list[str] | None = None) -> list[str]:
@@ -46,6 +47,7 @@ def assemble(
     decisions_per_task: int,
     items_per_task: int,
     items_per_label: int,
+    min_items_per_task: int,
     seed: int,
     progress: bool,
 ):
@@ -71,9 +73,14 @@ def assemble(
         for entry in items:
             taken.append(entry)
             decisions += len(entry.questions)
-            if budget and len(taken) >= budget:
+            # A task is done when it has seen enough *decisions* (so every task gets a
+            # comparable share of the gradient), with a floor on distinct states so a
+            # 28-questions-per-item task is not trained on nine texts.
+            enough_decisions = not decisions_per_task or decisions >= decisions_per_task
+            enough_items = len(taken) >= max(budget, min_items_per_task)
+            if enough_decisions and enough_items:
                 break
-            if decisions_per_task and decisions >= decisions_per_task:
+            if decisions_per_task and decisions >= 6 * decisions_per_task:
                 break
         samples.extend(items_to_samples(taken))
         per_task[task] = {"items": len(taken), "decisions": decisions}
@@ -95,6 +102,8 @@ def main() -> int:
                         help="cap by distinct states, not decisions (0 = off)")
     parser.add_argument("--items-per-label", type=int, default=0,
                         help="also allow this many states per option slot (0 = off)")
+    parser.add_argument("--min-items-per-task", type=int, default=0,
+                        help="always take at least this many distinct states per task")
     parser.add_argument("--max-samples", type=int, default=6000, help="cap after balancing (0 = no cap)")
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch-size", type=int, default=8)
@@ -105,6 +114,19 @@ def main() -> int:
     parser.add_argument("--no-balance", action="store_true", help="keep the natural class mix")
     parser.add_argument("--anchor", type=float, default=0.0,
                         help="L2 pull toward the pretrained readout (0 = free training)")
+    parser.add_argument("--row-norm-cap", default="auto",
+                        help="hold every trained row at this norm ('auto' = the norm of the "
+                             "reserved label rows, 0 = unconstrained)")
+    parser.add_argument("--optimizer", default="sgd", choices=["sgd", "adamw"],
+                        help="sgd fits a linear readout by accumulating class means")
+    parser.add_argument("--max-grad-norm", type=float, default=0.0,
+                        help="clip the readout gradient (0 = off; the raw norm is ~1e4, so "
+                             "clipping to 1 leaves SGD with a uselessly small step)")
+    parser.add_argument("--momentum", type=float, default=0.0, help="SGD momentum")
+    parser.add_argument("--prototype-init", action="store_true",
+                        help="start each row at the mean state of the answer (one forward pass)")
+    parser.add_argument("--init-from", default=None,
+                        help="start from an existing readout.pt (keeps its rows and table)")
     parser.add_argument("--report", default="artifacts/train_multitask_v2.json")
     parser.add_argument("--quiet", action="store_true", help="hide the progress bars")
     args = parser.parse_args()
@@ -126,6 +148,7 @@ def main() -> int:
         decisions_per_task=args.decisions_per_task,
         items_per_task=args.items_per_task,
         items_per_label=args.items_per_label,
+        min_items_per_task=args.min_items_per_task,
         seed=args.seed,
         progress=progress,
     )
@@ -144,10 +167,52 @@ def main() -> int:
         model_path=args.model,
         device=args.device,
         readout="slot_head",
-        readout_checkpoint=None,
+        readout_checkpoint=args.init_from,
     )
     print(f"loading backbone {args.model} ...")
     engine = QwenJevLite.from_pretrained(config=config)
+
+    max_slots = engine.limits.max_slots
+    table, answer_decisions = build_slot_table(samples, max_slots=max_slots)
+    if not hasattr(engine.readout, "set_slot_table"):
+        raise SystemExit("the slot_head readout is required to train this mix")
+    # Continuing from a checkpoint on a *subset* of the tasks keeps every row the
+    # earlier run trained and only appends rows for answers it never saw.
+    inherited = dict(engine.readout.slot_table)
+    if inherited:
+        cursor = max([SLOT_RESERVE - 1, *inherited.values()]) + 1
+        for answer in table:
+            if answer not in inherited:
+                inherited[answer] = cursor
+                cursor += 1
+        if cursor > max_slots:
+            raise SystemExit(f"resuming needs {cursor} rows but the head has {max_slots}")
+        table = inherited
+        answer_decisions = {a: d for a, d in answer_decisions.items() if a in table}
+    engine.readout.set_slot_table(table)
+    rows_used = max([SLOT_RESERVE, *(row + 1 for row in table.values())])
+    print(
+        f"{len(table)} trained answers -> {rows_used}/{max_slots} rows "
+        f"({SLOT_RESERVE} reserved + {rows_used - SLOT_RESERVE} trained)"
+    )
+    for answer, decisions in sorted(answer_decisions.items(), key=lambda kv: -kv[1])[:12]:
+        qtype, question, rest = answer.split(chr(31), 2)
+        space, key = rest.rsplit(chr(31), 1)
+        print(
+            f"  {qtype:<7} {question[:16]:<16} {len(space.split(chr(31))):>4} options  "
+            f"{key[:20]:<20} {decisions:>6} decisions"
+        )
+    print(f"  ... {max(0, len(answer_decisions) - 12)} more answers")
+
+    reserved_norm = float(engine.readout.weight[: len(SLOT_LETTERS)].float().norm(dim=1).mean())
+    try:
+        row_norm_cap = reserved_norm if args.row_norm_cap == "auto" else float(args.row_norm_cap)
+    except ValueError:
+        raise SystemExit("--row-norm-cap takes 'auto' or a number")
+    row_norm_cap = row_norm_cap or None
+    if row_norm_cap:
+        print(f"row norm cap   : {row_norm_cap:.3f} (reserved label rows: {reserved_norm:.3f})")
+
     tuner = RLCDFineTune(
         engine,
         objective=args.objective,
@@ -157,7 +222,15 @@ def main() -> int:
         seed=args.seed,
         balance="none",  # already balanced above
         anchor=args.anchor,
+        row_norm_cap=row_norm_cap,
+        optimizer=args.optimizer,
+        max_grad_norm=args.max_grad_norm,
+        momentum=args.momentum,
     )
+    if args.prototype_init:
+        rows = tuner.prototypes(samples, progress=progress)
+        written = engine.readout.load_rows(rows, cap=row_norm_cap)
+        print(f"prototype rows : {written} answers initialised from their mean state")
     report = tuner.train(samples, epochs=args.epochs, progress=progress)
 
     model_dir = Path(args.model_dir)
@@ -179,8 +252,13 @@ def main() -> int:
         "seconds": round(report.seconds, 1),
         "lr": args.lr,
         "anchor": args.anchor,
+        "row_norm_cap": row_norm_cap,
+        "optimizer": args.optimizer,
         "batch_size": args.batch_size,
         "seed": args.seed,
+        "label_spaces": answer_decisions,
+        "slot_rows": rows_used,
+        "max_slots": max_slots,
     }
     (model_dir / "card.json").write_text(json.dumps(card, indent=2), encoding="utf-8")
     if args.report:

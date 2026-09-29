@@ -35,6 +35,70 @@ class QuestionType(str, Enum):
 #: splits digits one at a time, so letters are the only stable single-token labels.
 SLOT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+#: Rows ``0 .. 25`` of a trained slot head stay the pretrained label rows, and row
+#: ``SLOT_UNKNOWN_ROW`` is a neutral row for an option past the 26 reserved ones whose
+#: label space the head never saw. Every trained label space gets its own block
+#: *after* them, so training one label space can never overwrite the rows another
+#: label space falls back on.
+SLOT_UNKNOWN_ROW = len(SLOT_LETTERS)
+SLOT_RESERVE = SLOT_UNKNOWN_ROW + 1
+
+#: Separator used when an answer is turned into a dictionary key.
+FAMILY_SEP = "\x1f"
+
+
+def label_space(option_keys: "Sequence[str]") -> str:
+    """Canonical name of a label space: its answer keys, sorted.
+
+    Sorting is what makes the name independent of the order a dataset happens to list
+    its options in - CLINC150's train file and its test file ship the same 150 intents
+    in different orders, and they must still be the same label space.
+    """
+
+    return FAMILY_SEP.join(sorted(str(key) for key in option_keys))
+
+
+def option_ids(
+    question_type: "QuestionType | str",
+    option_keys: "Sequence[str]",
+    *,
+    question_id: str = "",
+) -> list[str]:
+    """One stable id per allowed answer: its question, its label space, then its key.
+
+    The essay's readout is ``z = W h + b`` over the *K allowed answers* of one question.
+    Keying the rows by the question and the answer, rather than by their position in the
+    row, is what lets one head serve every question without overwriting itself: every
+    question owns a private block of rows, and *within* a block the row is chosen by the
+    answer's key rather than by its position, so two files that list the same options in
+    a different order still read the same row. The question id is part of the identity
+    because two different questions can offer the same answers - six Jigsaw labels, 28
+    GoEmotions emotions and five retrieval collections all ask ``yes``/``no`` - and
+    pooling them into one pair of rows measured *worse than chance* on the collection
+    with the fewest samples (scifact relevance 0.882 -> 0.212).
+    """
+
+    qtype = question_type.value if isinstance(question_type, QuestionType) else str(question_type)
+    space = label_space(option_keys)
+    return [
+        f"{qtype}{FAMILY_SEP}{question_id}{FAMILY_SEP}{space}{FAMILY_SEP}{key}"
+        for key in option_keys
+    ]
+
+
+def question_option_ids(question: "Question") -> list[str]:
+    """Answer ids of a built :class:`Question`, in the order the options are shown."""
+
+    return option_ids(
+        question.type, [option.key for option in question.options], question_id=question.id
+    )
+
+
+def family_signature(question_type: "QuestionType | str", option_keys: "Sequence[str]") -> str:
+    """Name of a whole label space (used for reporting and for dataset checks)."""
+
+    qtype = question_type.value if isinstance(question_type, QuestionType) else str(question_type)
+    return f"{qtype}{FAMILY_SEP}{label_space(option_keys)}"
 
 def slot_label(index: int) -> str:
     """``A..Z, AA, AB, ...`` for arbitrarily many options.

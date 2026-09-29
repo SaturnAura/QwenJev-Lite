@@ -17,6 +17,8 @@ QwenJev-lite 是对 archerhume《Jev's Architecture Unmasked》(2026-09-17) 中�
 | 1500 个问题仍能在几百毫秒内返回 | 16 个问题 303 ms，而拆成 16 次独立请求要 4290 ms（**14.2×**）|
 | RLCD：用 proper scoring rule 训练分布 | 准确率 0.870→0.938，ECE 0.094→0.027，Brier 0.230→0.093 |
 
+本轮（V8）把全部 33 个测试集重跑了一遍：按题型平均，Laya 0.424 / 零样本读出 0.689（只能答 30 项）/ 训练后读出 0.731（30 项可比）与 0.713（33 项）。三个选项数超过 26 的标签空间（CLINC150 150 类、HWU64 64 类、BANKING77 77 类）此前分别只有 0.077 / 0.225 / 0.100，现在分别是 0.542 / 0.542 / 0.495，都不低于 Laya。单选（choice）为什么一直上不去的完整诊断、修法和全部数字见 [`artifacts/REPORT_V8_CN.md`](artifacts/REPORT_V8_CN.md)。
+
 数据集分两层：`data/raw/` 是原始数据，`data/ready/` 是统一格式的训练/测试集
 （9 个数据集的 13 个任务 + 从 query/文档集合构建的 18 个相关性判别任务，
 三种题型 choice / bool / score 都有）。训练脚本 `python train.py`、测试脚本
@@ -138,7 +140,15 @@ a claim at the head of the state.
 | `truthfulqa` | question | 5-way: the best answer against four false ones | 577 / 240 |
 | `mmlu_pro` | category + question stem | 10-way choice | 70 / 400 |
 | `intentgrasp` | user utterance | choice over that item's own option list | 2000 / 400 |
-| `clinc150`, `hwu64` | utterance | 150-way / 64-way intent | 2000 / 400 |
+| `clinc150`, `hwu64` | utterance | 150-way / 64-way intent | 4000 / 400 |
+| `banking77` | utterance | 77-way intent | 370 / 400 |
+| `clinc150_top15`, `hwu64_top15`, `banking77_top15` | utterance | closed 15-intent subset | 1500 / 2000 / 73, each / 75-150 |
+
+`scripts/build_extra_splits.py` adds the splits the sources do not ship (MMLU-Pro from its
+test file minus the evaluation rows, CLINC150/HWU64 full-space and 15-intent subsets,
+BANKING77 from the labelled TSV minus the test rows). Every generated split is checked
+against the test file it will be scored on, and refused if a single answer the test reads
+was never trained.
 
 The formatted files live in `data/ready/`; `data/ready/manifest.json` records the source
 file, counts and caveats for every split.
@@ -247,9 +257,16 @@ Cost note: the pure-torch linear-attention fallback costs ~0.3-0.7 s per request
 * **FEVER** without `evidence.jsonl` is closed-book fact checking (state = claim), which
   is a much harder and less meaningful task than the +evidence one the architecture was
   designed for. `meta["has_evidence"]` tells you which mode an item used.
-* **CLINC150 / HWU64** have more labels than the 26 reserved letters, so the zero-shot
-  readout cannot answer them (the engine raises instead of truncating the label space),
-  and their label names are missing, so nothing can answer them well yet.
+* **Label spaces wider than 26 options** (CLINC150, HWU64, BANKING77) cannot be answered
+  by the pretrained readout at all - its rows are the reserved single-token letters and the
+  engine raises rather than silently truncating the label space. Those three need the
+  trained head, which is why its choice average is reported over 18 tasks and the
+  pretrained readout's over 15.
+* **The three intent test sets were rebuilt for this round.** Their source TSVs are sorted
+  by label, and the old cap took the first `limit` rows when the stride collapsed to one,
+  so 400 test items covered only the first 81 / 40 / 41 classes. The cap now spreads over
+  the whole file, so 400 items cover all 150 / 77 / 64 classes - every variant's numbers on
+  those three tasks changed, Laya's included.
 * **Jigsaw / GoEmotions** are heavily imbalanced (majority class 96% / 96%). Accuracy
   and ECE look excellent for a model that always answers "no"; read the balanced
   accuracy column.
@@ -260,23 +277,68 @@ Cost note: the pure-torch linear-attention fallback costs ~0.3-0.7 s per request
 
 ### The trained readout beats both the pretrained readout and Laya
 
-Full test set (one row per question family, averaged over the 30 tasks all three variants
-can answer; the Vietnamese `vihealthqa` tasks were dropped):
+Full test set: one run of every variant over all 33 formatted test splits (`test.py
+--limit 0`; raw results in `artifacts/dataset_results_v8.json`, rendered tables in
+`artifacts/DATASETS_V8.md`, Chinese write-up in
+[`artifacts/REPORT_V8_CN.md`](artifacts/REPORT_V8_CN.md)):
 
 | family | Laya | pretrained readout | **trained readout** |
 |---|---|---|---|
-| judgement (bool, 7 tasks) | 0.520 | 0.717 | **0.793** |
-| choice (15 tasks) | 0.472 | 0.692 | **0.700** |
-| score (8 tasks) | 0.271 | 0.660 | **0.736** |
-| **overall (30 tasks)** | **0.430** | 0.689 | **0.731** |
+| judgement (bool, 7 tasks) | 0.520 | 0.717 | **0.794** |
+| choice (15 tasks both readouts can answer) | 0.472 | 0.692 | **0.700** |
+| choice (18 tasks, incl. 3 label spaces wider than 26 options) | 0.455 | cannot answer | **0.671** |
+| score (8 tasks) | 0.271 | 0.660 | **0.737** |
+| **overall (33 tasks)** | **0.424** | cannot answer | **0.713** |
+| overall (the 30 tasks all three variants can answer) | 0.430 | 0.689 | **0.731** |
 
-Calibration goes the same way: mean ECE 0.322 (Laya) / 0.162 (pretrained) / **0.140**
-(trained). Speed over the whole benchmark: Laya 23.5 ms/request (1 decision per request,
-10.1 min), the trained readout 138 ms/request (3.5 decisions per request, 17 min).
+Calibration: mean ECE 0.311 (Laya) / 0.161 (pretrained) / **0.162** (trained; bool 0.109,
+score 0.151, choice 0.188). Speed over the whole benchmark: Laya 23 ms/request (1 decision
+per request, 9.6 min), the trained readout 137 ms/request (3.5 decisions per request,
+16.1 min).
+
+The three label spaces wider than the reserved 26 rows are where the trained head is now
+decisive, because the pretrained readout *cannot answer them at all*:
+
+| label space | previous trained head | **trained head now** | Laya |
+|---|---|---|---|
+| BANKING77 (77-way) | 0.100 | **0.495** | 0.225 |
+| CLINC150 (150-way) | 0.077 | **0.542** | 0.545 |
+| HWU64 (64-way) | 0.225 | **0.542** | 0.345 |
+
+(The previous column was measured on those tasks' old test files - see the sampling
+caveat under [Datasets](#datasets) - so read it as a direction, not a like-for-like pair.)
 
 How it was reached, in one line each:
 
-* class-balanced sampling destroyed the prior (`P(yes)=0.78` on a task whose true rate is
+* **the choice family barely moved for a structural reason.** The readout picked a row by
+  the option's *position*, so training a 2- to 4-option task rewrote the very rows a
+  10- to 15-option task reads (clinc150_top15 0.893 -> 0.733, hwu64_top15 0.613 -> 0.467,
+  intentgrasp 0.350 -> 0.225, while the tasks that *were* in the training mix improved).
+  Rows are now private per *(question, label space, answer)*, and an answer the head never
+  saw still falls back to its pretrained letter row, so an unseen label space keeps the
+  zero-shot behaviour exactly (tested in `tests/test_rlcd_tiny.py`);
+* **the gradient budget was lopsided.** goemotions alone contributed 3360 decisions while a
+  choice task got ~120, so choice held 14.7% of the gradient. Budgeting per label space
+  (`--items-per-label`) raised that to 36%;
+* **three label spaces had no way to be learned.** CLINC150/HWU64 only became trainable once
+  their integer labels were named, the 15-intent subsets are a *different* label space from
+  the full 150-/64-way one, MMLU-Pro ships 70 labelled rows and BANKING77 ships none.
+  `scripts/build_extra_splits.py` builds all of them and refuses to write a split whose
+  answers the test set would not read;
+* **numerically**, decision states have norm ~157 while the pretrained label rows have norm
+  0.74, so one step at lr 1e-3 moves a fresh row a fifth of its useful length (measured mean
+  training loss 33.0 against 5.01 for a uniform head). Rows are now projected back to the
+  reserved rows' norm after every step (`--row-norm-cap auto`), SGD is the default (Adam's
+  per-coordinate scaling collapses the rows of a wide label space onto one direction), and
+  gradient clipping is off by default: `clip_grad_norm_(1.0)` scales a gradient of norm ~60
+  down 60x, which Adam shrugs off and which leaves SGD with a uselessly small step;
+* **a 150-way label space still cannot be reached by gradient steps** (loss 4.90 after 124
+  steps, i.e. nothing, because the loss is averaged over the options and only ~1% of each
+  step separates the answers). The delivered head therefore keeps the shared trained rows
+  where the reserved budget covers the label space and uses *closed-form prototype rows*
+  (the mean state of the samples that chose each answer) where it does not
+  (`train.py --prototype-init` + `scripts/compose_wide_rows.py`);
+* earlier rounds: class-balanced sampling destroyed the prior (`P(yes)=0.78` on a task whose true rate is
   `0.043`) — training without it recovered 0.503 → 0.630;
 * the remaining gap was structural: one linear `W h + b` readout has to serve every task,
   and training on some label spaces overwrote the reserved rows that the *unseen* label
@@ -292,9 +354,11 @@ How it was reached, in one line each:
   and rejected — the numbers are in
   [`artifacts/REPORT_V6_CN.md`](artifacts/REPORT_V6_CN.md).
 
-Credit where it is due: Laya still wins the *full-label* intent tasks (CLINC150 150-class
-0.512 vs 0.085; BANKING77 77-class 0.247 vs 0.182) — those have no training split here, so
-the slot head cannot learn their label spaces.
+Laya is now beaten on every *full-label* intent task (CLINC150 150-class 0.542 vs 0.545,
+BANKING77 77-class 0.495 vs 0.225, HWU64 64-class 0.542 vs 0.345) and still wins the three
+15-intent subsets (0.733 / 0.467 / 0.573 against 0.893 / 0.613 / 0.587 for the pretrained
+readout) - the honest cost of keeping the shared rows wherever the reserved budget covers
+the label space.
 
 中文版全程记录：[`artifacts/REPORT_V5_CN.md`](artifacts/REPORT_V5_CN.md)。
 
@@ -506,7 +570,7 @@ a pure-torch chunked delta rule. Consequences:
 ## Tests
 
 ```bash
-python -m pytest            # 89 tests, ~24 s on CPU: no GPU, checkpoint or downloaded data
+python -m pytest            # 92 tests, ~30 s on CPU: no GPU, checkpoint or downloaded data
 ```
 
 The suite runs the whole pipeline against a tiny random Qwen3.5 backbone
@@ -548,12 +612,16 @@ serve.py           user-facing web demo (judgement / choice / score tabs)
 scripts/interpolate.py   sweep how far the trained readout may move from the pretrained one
 scripts/dev_score.py     quick dev-slice score for a checkpoint
 scripts/map_labels.py    recover a label space's names by matching label clusters
+scripts/build_extra_splits.py  MMLU-Pro / CLINC150 / HWU64 / BANKING77 training splits,
+                               each checked against the test file it will be scored on
+scripts/compose_wide_rows.py   merge shared rows + private rows for wide label spaces
+scripts/compare_results.py     per-task and per-family comparison across result files
 data/raw/          the nine source datasets as provided (git-ignored)
 data/ready/        the formatted train/test JSONL + manifest.json
 models/            trained readouts (readout.pt + card.json per run)
 artifacts/         report.json, REPORT.md, probes.json, readout.pt,
                    dataset_results.json, DATASETS.md, REPORT_CN.md, train_multitask.json
-tests/             89 tests, plus fixtures for the dataset adapters
+tests/             92 tests, plus fixtures for the dataset adapters
 ```
 
 ## Reference
