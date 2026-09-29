@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-28T13:15:13+00:00",
+  "generated_at": "2026-09-29T11:15:18+00:00",
   "source_root": "D:\\AutoBM25\\dataset_en",
-  "out_dir": "data\\normalized",
+  "out_dir": "data\\ready",
   "queries_per_task": 60,
   "tasks": {
     "arguana": {
@@ -11,7 +11,7 @@
       "train_split": "test",
       "splits": {
         "bool_test": {
-          "file": "data\\normalized\\arguana_rel_bool_test.jsonl",
+          "file": "data\\ready\\arguana_rel_bool_test.jsonl",
           "items": 60,
           "decisions": 300,
           "question_ids": [
@@ -23,9 +23,9 @@
           ]
         },
         "bool_train": {
-          "file": "data\\normalized\\arguana_rel_bool_train.jsonl",
-          "items": 149,
-          "decisions": 745,
+          "file": "data\\ready\\arguana_rel_bool_train.jsonl",
+          "items": 498,
+          "decisions": 2490,
           "question_ids": [
             "d0",
             "d1",
@@ -35,7 +35,7 @@
           ]
         },
         "choice_test": {
-          "file": "data\\normalized\\arguana_rel_choice_test.jsonl",
+          "file": "data\\ready\\arguana_rel_choice_test.jsonl",
           "items": 60,
           "decisions": 60,
           "question_ids": [
@@ -43,15 +43,15 @@
           ]
         },
         "choice_train": {
-          "file": "data\\normalized\\arguana_rel_choice_train.jsonl",
-          "items": 149,
-          "decisions": 149,
+          "file": "data\\ready\\arguana_rel_choice_train.jsonl",
+          "items": 498,
+          "decisions": 498,
           "question_ids": [
             "passage"
           ]
         },
         "score_test": {
-          "file": "data\\normalized\\arguana_rel_score_test.jsonl",
+          "file": "data\\ready\\arguana_rel_score_test.jsonl",
           "items": 60,
           "decisions": 300,
           "question_ids": [
@@ -63,9 +63,9 @@
           ]
         },
         "score_train": {
-          "file": "data\\normalized\\arguana_rel_score_train.jsonl",
-          "items": 149,
-          "decisions": 745,
+          "file": "data\\ready\\arguana_rel_score_train.jsonl",
+          "items": 498,
+          "decisions": 2490,
           "question_ids": [
             "d0",
             "d1",
@@ -84,7 +84,7 @@
       "train_split": "train",
       "splits": {
         "bool_test": {
-          "file": "data\\normalized\\scifact_rel_bool_test.jsonl",
+          "file": "data\\ready\\scifact_rel_bool_test.jsonl",
           "items": 60,
           "decisions": 306,
           "question_ids": [
@@ -97,9 +97,9 @@
           ]
         },
         "bool_train": {
-          "file": "data\\normalized\\scifact_rel_bool_train.jsonl",
-          "items": 150,
-          "decisions": 768,
+          "file": "data\\ready\\scifact_rel_bool_train.jsonl",
+          "items": 500,
+          "decisions": 2536,
           "question_ids": [
             "d0",
             "d1",
@@ -110,7 +110,7 @@
           ]
         },
         "choice_test": {
-          "file": "data\\normalized\\scifact_rel_choice_test.jsonl",
+          "file": "data\\ready\\scifact_rel_choice_test.jsonl",
           "items": 60,
           "decisions": 60,
           "question_ids": [
@@ -118,15 +118,15 @@
           ]
         },
         "choice_train": {
-          "file": "data\\normalized\\scifact_rel_choice_train.jsonl",
-          "items": 150,
-          "decisions": 150,
+          "file": "data\\ready\\scifact_rel_choice_train.jsonl",
+          "items": 500,
+          "decisions": 500,
           "question_ids": [
             "passage"
           ]
         },
         "score_test": {
-          "file": "data\\normalized\\scifact_rel_score_test.jsonl",
+          "file": "data\\ready\\scifact_rel_score_test.jsonl",
           "items": 60,
           "decisions": 306,
           "question_ids": [
@@ -139,9 +139,9 @@
           ]
         },
         "score_train": {
-          "file": "data\\normalized\\scifact_rel_score_train.jsonl",
-          "items": 150,
-          "decisions": 768,
+          "file": "data\\ready\\scifact_rel_score_train.jsonl",
+          "items": 500,
+          "decisions": 2536,
           "question_ids": [
             "d0",
             "d1",
@@ -161,7 +161,7 @@
       "train_split": "train",
       "splits": {
         "bool_test": {
-          "file": "data\\normalized\\nfcorpus_rel_bool_test.jsonl",
+          "file": "data\\ready\\nfcorpus_rel_bool_test.jsonl",
           "items": 60,
           "decisions": 355,
           "question_ids": [
@@ -174,9 +174,9 @@
           ]
         },
         "bool_train": {
-          "file": "data\\normalized\\nfcorpus_rel_bool_train.jsonl",
-          "items": 150,
-          "decisions": 900,
+          "file": "data\\ready\\nfcorpus_rel_bool_train.jsonl",
+          "items": 500,
+          "decisions": 2958,
           "question_ids": [
             "d0",
             "d1",
@@ -187,7 +187,7 @@
           ]
         },
         "choice_test": {
-          "file": "data\\normalized\\nfcorpus_rel_choice_test.jsonl",
+          "file": "data\\ready\\nfcorpus_rel_choice_test.jsonl",
           "items": 60,
           "decisions": 60,
           "question_ids": [
@@ -195,15 +195,15 @@
           ]
         },
         "choice_train": {
-          "file": "data\\normalized\\nfcorpus_rel_choice_train.jsonl",
-          "items": 150,
-          "decisions": 150,
+          "file": "data\\ready\\nfcorpus_rel_choice_train.jsonl",
+          "items": 500,
+          "decisions": 500,
           "question_ids": [
             "passage"
           ]
         },
         "score_test": {
-          "file": "data\\normalized\\nfcorpus_rel_score_test.jsonl",
+          "file": "data\\ready\\nfcorpus_rel_score_test.jsonl",
           "items": 60,
           "decisions": 355,
           "question_ids": [
@@ -216,86 +216,9 @@
           ]
         },
         "score_train": {
-          "file": "data\\normalized\\nfcorpus_rel_score_train.jsonl",
-          "items": 150,
-          "decisions": 900,
-          "question_ids": [
-            "d0",
-            "d1",
-            "d2",
-            "d3",
-            "d4",
-            "d5"
-          ]
-        }
-      },
-      "status": "ok"
-    },
-    "vihealthqa": {
-      "title": "relevance judgement: vihealthqa",
-      "source": "D:\\AutoBM25\\dataset_en\\vihealthqa",
-      "eval_split": "test",
-      "train_split": "train",
-      "splits": {
-        "bool_test": {
-          "file": "data\\normalized\\vihealthqa_rel_bool_test.jsonl",
-          "items": 60,
-          "decisions": 359,
-          "question_ids": [
-            "d0",
-            "d1",
-            "d2",
-            "d3",
-            "d4",
-            "d5"
-          ]
-        },
-        "bool_train": {
-          "file": "data\\normalized\\vihealthqa_rel_bool_train.jsonl",
-          "items": 150,
-          "decisions": 900,
-          "question_ids": [
-            "d0",
-            "d1",
-            "d2",
-            "d3",
-            "d4",
-            "d5"
-          ]
-        },
-        "choice_test": {
-          "file": "data\\normalized\\vihealthqa_rel_choice_test.jsonl",
-          "items": 60,
-          "decisions": 60,
-          "question_ids": [
-            "passage"
-          ]
-        },
-        "choice_train": {
-          "file": "data\\normalized\\vihealthqa_rel_choice_train.jsonl",
-          "items": 150,
-          "decisions": 150,
-          "question_ids": [
-            "passage"
-          ]
-        },
-        "score_test": {
-          "file": "data\\normalized\\vihealthqa_rel_score_test.jsonl",
-          "items": 60,
-          "decisions": 359,
-          "question_ids": [
-            "d0",
-            "d1",
-            "d2",
-            "d3",
-            "d4",
-            "d5"
-          ]
-        },
-        "score_train": {
-          "file": "data\\normalized\\vihealthqa_rel_score_train.jsonl",
-          "items": 150,
-          "decisions": 900,
+          "file": "data\\ready\\nfcorpus_rel_score_train.jsonl",
+          "items": 500,
+          "decisions": 2958,
           "question_ids": [
             "d0",
             "d1",
@@ -315,7 +238,7 @@
       "train_split": "test",
       "splits": {
         "bool_test": {
-          "file": "data\\normalized\\scidocs_rel_bool_test.jsonl",
+          "file": "data\\ready\\scidocs_rel_bool_test.jsonl",
           "items": 60,
           "decisions": 360,
           "question_ids": [
@@ -328,9 +251,9 @@
           ]
         },
         "bool_train": {
-          "file": "data\\normalized\\scidocs_rel_bool_train.jsonl",
-          "items": 150,
-          "decisions": 900,
+          "file": "data\\ready\\scidocs_rel_bool_train.jsonl",
+          "items": 500,
+          "decisions": 3000,
           "question_ids": [
             "d0",
             "d1",
@@ -341,7 +264,7 @@
           ]
         },
         "choice_test": {
-          "file": "data\\normalized\\scidocs_rel_choice_test.jsonl",
+          "file": "data\\ready\\scidocs_rel_choice_test.jsonl",
           "items": 60,
           "decisions": 60,
           "question_ids": [
@@ -349,15 +272,15 @@
           ]
         },
         "choice_train": {
-          "file": "data\\normalized\\scidocs_rel_choice_train.jsonl",
-          "items": 150,
-          "decisions": 150,
+          "file": "data\\ready\\scidocs_rel_choice_train.jsonl",
+          "items": 500,
+          "decisions": 500,
           "question_ids": [
             "passage"
           ]
         },
         "score_test": {
-          "file": "data\\normalized\\scidocs_rel_score_test.jsonl",
+          "file": "data\\ready\\scidocs_rel_score_test.jsonl",
           "items": 60,
           "decisions": 360,
           "question_ids": [
@@ -370,9 +293,9 @@
           ]
         },
         "score_train": {
-          "file": "data\\normalized\\scidocs_rel_score_train.jsonl",
-          "items": 150,
-          "decisions": 900,
+          "file": "data\\ready\\scidocs_rel_score_train.jsonl",
+          "items": 500,
+          "decisions": 3000,
           "question_ids": [
             "d0",
             "d1",
@@ -392,7 +315,7 @@
       "train_split": "test",
       "splits": {
         "bool_test": {
-          "file": "data\\normalized\\trec-covid_rel_bool_test.jsonl",
+          "file": "data\\ready\\trec-covid_rel_bool_test.jsonl",
           "items": 50,
           "decisions": 300,
           "question_ids": [
@@ -405,7 +328,7 @@
           ]
         },
         "choice_test": {
-          "file": "data\\normalized\\trec-covid_rel_choice_test.jsonl",
+          "file": "data\\ready\\trec-covid_rel_choice_test.jsonl",
           "items": 50,
           "decisions": 50,
           "question_ids": [
@@ -413,7 +336,7 @@
           ]
         },
         "score_test": {
-          "file": "data\\normalized\\trec-covid_rel_score_test.jsonl",
+          "file": "data\\ready\\trec-covid_rel_score_test.jsonl",
           "items": 50,
           "decisions": 300,
           "question_ids": [

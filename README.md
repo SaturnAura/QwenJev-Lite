@@ -260,18 +260,19 @@ Cost note: the pure-torch linear-attention fallback costs ~0.3-0.7 s per request
 
 ### The trained readout beats both the pretrained readout and Laya
 
-Full test set (36 tasks / 6,865 items / 24,487 decisions), one row per question family,
-averaged over the 33 tasks all three variants can answer:
+Full test set (one row per question family, averaged over the 30 tasks all three variants
+can answer; the Vietnamese `vihealthqa` tasks were dropped):
 
 | family | Laya | pretrained readout | **trained readout** |
 |---|---|---|---|
-| judgement (bool, 8 tasks) | 0.503 | 0.702 | **0.803** |
-| choice (16 tasks) | 0.457 | 0.663 | **0.669** |
-| score (9 tasks) | 0.270 | 0.661 | **0.734** |
-| **overall (33 tasks)** | **0.417** | 0.672 | **0.719** |
+| judgement (bool, 7 tasks) | 0.520 | 0.717 | **0.793** |
+| choice (15 tasks) | 0.472 | 0.692 | **0.700** |
+| score (8 tasks) | 0.271 | 0.660 | **0.736** |
+| **overall (30 tasks)** | **0.430** | 0.689 | **0.731** |
 
-Speed over the whole benchmark: Laya 23.5 ms/request (1 decision per request, 10.1 min),
-the trained readout 138.4 ms/request (3.53 decisions per request, 16.8 min).
+Calibration goes the same way: mean ECE 0.322 (Laya) / 0.162 (pretrained) / **0.140**
+(trained). Speed over the whole benchmark: Laya 23.5 ms/request (1 decision per request,
+10.1 min), the trained readout 138 ms/request (3.5 decisions per request, 17 min).
 
 How it was reached, in one line each:
 
@@ -283,7 +284,13 @@ How it was reached, in one line each:
 * so the head is trained with an L2 anchor to its initialisation
   (`train.py --anchor 1e-2`) and the final matrix keeps half of the trained correction,
   `W(0.5) = W₀ + 0.5·(W_trained − W₀)` (`scripts/interpolate.py`), which gave 0.824 on the
-  dev slice against 0.728 for the pretrained readout and 0.739 for the fully trained one.
+  dev slice against 0.728 for the pretrained readout and 0.739 for the fully trained one;
+* more training data (per-item budgets, 5.6k → 11.4k decisions, 500 queries per relevance
+  collection) moved jigsaw/goemotions up but left the average flat; training sample
+  budgets of 400 decisions per task, 3 epochs, class balancing, training on the
+  recovered CLINC150/HWU64 label spaces and averaging two training runs were all tried
+  and rejected — the numbers are in
+  [`artifacts/REPORT_V6_CN.md`](artifacts/REPORT_V6_CN.md).
 
 Credit where it is due: Laya still wins the *full-label* intent tasks (CLINC150 150-class
 0.512 vs 0.085; BANKING77 77-class 0.247 vs 0.182) — those have no training split here, so
@@ -540,6 +547,7 @@ demo.py            user-facing CLI demo: the essay's example, all three question
 serve.py           user-facing web demo (judgement / choice / score tabs)
 scripts/interpolate.py   sweep how far the trained readout may move from the pretrained one
 scripts/dev_score.py     quick dev-slice score for a checkpoint
+scripts/map_labels.py    recover a label space's names by matching label clusters
 data/raw/          the nine source datasets as provided (git-ignored)
 data/ready/        the formatted train/test JSONL + manifest.json
 models/            trained readouts (readout.pt + card.json per run)

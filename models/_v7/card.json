@@ -1,0 +1,111 @@
+{
+  "model_dir": "models\\_v7",
+  "backbone": "C:\\qwen3.5-4B",
+  "readout": "slot_head",
+  "objective": "log_loss",
+  "balance": "none",
+  "tasks": {
+    "arguana_rel_bool": {
+      "items": 120,
+      "decisions": 600
+    },
+    "arguana_rel_choice": {
+      "items": 120,
+      "decisions": 120
+    },
+    "arguana_rel_score": {
+      "items": 120,
+      "decisions": 600
+    },
+    "fever": {
+      "items": 120,
+      "decisions": 120
+    },
+    "fever_support": {
+      "items": 120,
+      "decisions": 120
+    },
+    "goemotions": {
+      "items": 120,
+      "decisions": 3360
+    },
+    "goemotions_sentiment": {
+      "items": 120,
+      "decisions": 120
+    },
+    "intentgrasp": {
+      "items": 120,
+      "decisions": 120
+    },
+    "jigsaw": {
+      "items": 120,
+      "decisions": 720
+    },
+    "jigsaw_severity": {
+      "items": 120,
+      "decisions": 120
+    },
+    "mmlu_pro": {
+      "items": 70,
+      "decisions": 70
+    },
+    "mnli": {
+      "items": 120,
+      "decisions": 366
+    },
+    "nfcorpus_rel_bool": {
+      "items": 120,
+      "decisions": 710
+    },
+    "nfcorpus_rel_choice": {
+      "items": 120,
+      "decisions": 120
+    },
+    "nfcorpus_rel_score": {
+      "items": 120,
+      "decisions": 708
+    },
+    "scidocs_rel_bool": {
+      "items": 120,
+      "decisions": 720
+    },
+    "scidocs_rel_choice": {
+      "items": 120,
+      "decisions": 120
+    },
+    "scidocs_rel_score": {
+      "items": 120,
+      "decisions": 720
+    },
+    "scifact_rel_bool": {
+      "items": 120,
+      "decisions": 611
+    },
+    "scifact_rel_choice": {
+      "items": 120,
+      "decisions": 120
+    },
+    "scifact_rel_score": {
+      "items": 120,
+      "decisions": 610
+    },
+    "snli": {
+      "items": 120,
+      "decisions": 396
+    },
+    "truthfulqa": {
+      "items": 120,
+      "decisions": 120
+    }
+  },
+  "decisions_raw": 11391,
+  "decisions_used": 11391,
+  "epochs": 1,
+  "steps": 1424,
+  "mean_loss": 0.8011464059158233,
+  "seconds": 578.5,
+  "lr": 0.0005,
+  "anchor": 0.01,
+  "batch_size": 8,
+  "seed": 0
+}

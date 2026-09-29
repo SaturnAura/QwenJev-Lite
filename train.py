@@ -44,6 +44,8 @@ def assemble(
     tasks: list[str],
     *,
     decisions_per_task: int,
+    items_per_task: int,
+    items_per_label: int,
     seed: int,
     progress: bool,
 ):
@@ -57,11 +59,20 @@ def assemble(
             continue
         items = load_normalized(path)
         rng.shuffle(items)
+        # A many-label task needs roughly a fixed number of examples *per class*;
+        # otherwise a 150-way classification gets the same 150 rows as a 3-way one.
+        labels = 0
+        for spec in items[0].questions.values():
+            criteria = spec.get("criteria")
+            labels = max(labels, len(criteria) if isinstance(criteria, dict) else 2)
+        budget = max(items_per_task, items_per_label * labels)
         taken: list = []
         decisions = 0
         for entry in items:
             taken.append(entry)
             decisions += len(entry.questions)
+            if budget and len(taken) >= budget:
+                break
             if decisions_per_task and decisions >= decisions_per_task:
                 break
         samples.extend(items_to_samples(taken))
@@ -80,6 +91,10 @@ def main() -> int:
     parser.add_argument("--exclude", nargs="*", default=list(DEFAULT_EXCLUDE),
                         help="tasks to leave out (default: the two long-option tasks)")
     parser.add_argument("--decisions-per-task", type=int, default=250)
+    parser.add_argument("--items-per-task", type=int, default=0,
+                        help="cap by distinct states, not decisions (0 = off)")
+    parser.add_argument("--items-per-label", type=int, default=0,
+                        help="also allow this many states per option slot (0 = off)")
     parser.add_argument("--max-samples", type=int, default=6000, help="cap after balancing (0 = no cap)")
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch-size", type=int, default=8)
@@ -109,6 +124,8 @@ def main() -> int:
         data_dir,
         tasks,
         decisions_per_task=args.decisions_per_task,
+        items_per_task=args.items_per_task,
+        items_per_label=args.items_per_label,
         seed=args.seed,
         progress=progress,
     )

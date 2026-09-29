@@ -980,22 +980,39 @@ def build_task_plans(src: Path, *, seed: int = 0) -> list[TaskPlan]:
         tsv = find_file(directory, "testset.tsv", "tfidf")
         if not tsv:
             continue
+        splits = [
+            SplitPlan(
+                "test",
+                lambda limit, p=tsv, k=key: convert_intent_tsv(
+                    p, "test", dataset=k, limit=limit
+                ),
+                [tsv],
+                note="the provided labelled examples, held out from training",
+            )
+        ]
+        # When the integer labels have been named (scripts/map_labels.py writes
+        # intents.txt), the dataset's own train split becomes training data for the
+        # same label space - which is what lets the readout learn it.
+        recovered = read_label_names(directory)
+        train_file = find_file(directory, "train-00000", "train")
+        if recovered and train_file:
+            splits.append(
+                SplitPlan(
+                    "train",
+                    lambda limit, p=train_file, k=key, nm=recovered: convert_intent_parquet(
+                        p, "train", dataset=k, limit=limit, label_names=nm
+                    ),
+                    [train_file],
+                    note="labels recovered from the labelled examples",
+                )
+            )
         add(
             TaskPlan(
                 key,
                 title,
                 "utterance",
                 "choice over every intent in the file",
-                [
-                    SplitPlan(
-                        "test",
-                        lambda limit, p=tsv, k=key: convert_intent_tsv(
-                            p, "test", dataset=k, limit=limit
-                        ),
-                        [tsv],
-                        note="test-only: the provided file is a test set",
-                    )
-                ],
+                splits,
                 note="label names come from the file, so the options are readable",
             )
         )
