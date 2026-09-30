@@ -1,3 +1,19 @@
+<div align="center">
+
+# QwenJev-lite
+
+**一种在 Qwen 上使用 RLCD 的 JEV-like 模型**
+
+![python](https://img.shields.io/badge/python-3.11-3776ab?logo=python&logoColor=white)
+![torch](https://img.shields.io/badge/torch-2.6.0%2Bcu126-ee4c2c?logo=pytorch&logoColor=white)
+![transformers](https://img.shields.io/badge/transformers-5.14-ffd21e)
+![tests](https://img.shields.io/badge/tests-92%20passing-2ea44f)
+![license](https://img.shields.io/badge/license-MIT-blue)
+
+[结果](#结果) · [快速开始](#快速开始) · [交付模型](#交付模型) · [训练与测试](#训练与测试) · [数据](#数据) · [目录结构](#目录结构) · [工作原理](#工作原理) · [RLCD 简析](#rlcd-简析) · [对比 BERT](#与-bert-base-分类器的区别) · [改编与数据](#我们对模型与数据做了哪些改编) · [引用](#引用) · [TODO](#todo)
+
+</div>
+
 > 英文版见 [`README.md`](README.md)。
 
 QwenJev-lite 将 Transformer 形式化为一个**类型化决策模型**：共享状态仅编码一次，每个问题构成一条相互隔离的分支，推理末端输出的并非生成文本，而是**允许答案上的概率分布**。问题具有类型 —— 有限选择 `choice`、是/否 `bool`、有序打分 `score` —— 同一 state 上可一次性完成多种类型的提问。

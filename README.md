@@ -1,5 +1,19 @@
 <div align="center">
 
+# QwenJev-lite
+
+**A JEV-like model that uses RLCD on Qwen**
+
+![python](https://img.shields.io/badge/python-3.11-3776ab?logo=python&logoColor=white)
+![torch](https://img.shields.io/badge/torch-2.6.0%2Bcu126-ee4c2c?logo=pytorch&logoColor=white)
+![transformers](https://img.shields.io/badge/transformers-5.14-ffd21e)
+![tests](https://img.shields.io/badge/tests-92%20passing-2ea44f)
+![license](https://img.shields.io/badge/license-MIT-blue)
+
+[Results](#results) · [Quickstart](#quickstart) · [The shipped model](#the-shipped-model) · [Train and test](#train-and-test) · [Data](#data) · [Layout](#layout) · [How it works](#how-it-works) · [RLCD in brief](#rlcd-in-brief) · [vs. BERT](#compared-with-a-bert-base-classifier) · [Adaptations & data](#what-we-adapted-in-the-model-and-the-data) · [References](#references) · [TODO](#todo)
+
+</div>
+
 > Chinese version: [`README_CN.md`](README_CN.md).
 
 QwenJev-lite formulates a transformer as a **typed decision model**: the shared state is encoded once, each question becomes an isolated branch, and inference returns a probability distribution over the allowed answers rather than generated text. Questions are typed — a finite `choice`, a `bool`, or an ordered `score` — and one request may cover several types on the same state.
