@@ -17,14 +17,17 @@
 
 结论：**在当前 Windows + 无 Triton + 无 nvcc 的环境里融合算子装不上**（四条路都被堵死，不是没试）。模型继续跑纯 torch 的分块 delta rule；注意力部分模型本身已经用 SDPA（`_attn_implementation: sdpa`，8 个 full-attention 层），没有可捡的便宜。
 
-实测速度（交付模型，`decide_batch`，含 padding）：
+实测速度（单位说清楚：Laya **一次调用答一个问题**、并给每个问题重新编码 state；我们的引擎**一次性答完同一个 state 上的所有问题**，所以每次调用的成本几乎不随问题数增长）：
 
-| 场景 | 耗时 |
-|---|---|
-| 1 个问题（15 个选项，短 state） | 94 ms |
-| 同一 state 上 16 个问题×15 选项 | 1.17 s（73 ms/决策） |
-| 同一 state 上 64 个问题×15 选项 | 4.70 s（73 ms/决策） |
-| 全量 28 个任务（14409 条决策） | 137 ms/请求，3.5 决策/请求 |
+| 场景 | 我们（每次调用） | 我们（每决策） | Laya（每次调用） | Laya（每决策） |
+|---|---|---|---|---|
+| 600 字符 state，1 / 8 / 64 个问题 | 297 / 283 / 1511 ms | 297 / 35 / 23.6 ms | 23 / 193 / 1496 ms | 22.7 / 24.1 / 23.4 ms |
+| 6000 字符 state，1 / 8 / 64 个问题 | 461 / 297 / 1655 ms | 461 / 37 / 25.9 ms | 26 / 191 / 1621 ms | 26.3 / 23.8 / 25.3 ms |
+| 全量 28 个任务（23145 决策，每次调用 16 个 item） | 2.5 s/次调用（约 68 决策） | **36.7 ms** | 23 ms/次调用（1 决策） | **23.4 ms** |
+
+结论如实说：**按决策算我们比 Laya 慢 1.0-1.6 倍**，只有在"一个 state 问很多问题"时才追平并反超（墙钟在约 64 个问题时打平）；我们的优势是"每次调用成本几乎是平的"（多一个问题的增量约 20 ms），而不是单次更快。论文里"1500 个问题几百毫秒"要靠融合算子，本机装不上（见 §1）。
+
+顺带修掉一个真实缺陷：`decide_batch`（评测路径）原来把 state 复制进每一条分支，长 state 多问题时白做了 12 倍工作（6000 字符 + 8 问题：2.6 s → 0.3 s；+64 问题：20.4 s → 1.7 s）。现在 `state tokens × branches` 超过 `QwenJevConfig.state_reuse_tokens`（默认 800）的请求走"state 只预填一次 + 用缓存"的路径；短 state 仍走行批处理（那里它快 5-27 倍，因为 16 个 item 只付一次调用开销）。`scripts/speed_compare.py` 可复现这张表。
 
 想要 10 倍级别的提升，只能到 Linux 上 `pip install flash-linear-attention causal-conv1d`（或在 Windows 装 CUDA toolkit + MSVC 自行编译 `causal-conv1d`，再配 `triton-windows`）。装完 transformers 会自动走快路径，这份数字可以直接重跑对比。
 
@@ -49,7 +52,7 @@
 
 ### 删除会不会让模型变强？
 
-**不会。** 交付模型的行按 `(问题, 标签空间, 答案)` 私有，删掉几个任务的数据不可能改变其它任务读到的行。实测也如此：删完重新生成原型行（`models/_p4`）再重新拼装后，dev 切片上保留下来的任务逐项与 V8 一致（只有 hwu64 因全局缩放系数变化 0.425 → 0.450）。**变化的只是统计口径**：不再把"按设计用不了"的任务算进平均分。
+**不会。** 交付模型的行按 `(问题, 标签空间, 答案)` 私有，删掉几个任务的数据不可能改变其它任务读到的行。实测也如此：删完重新生成原型行（`models/prototype-rows`）再重新拼装后，dev 切片上保留下来的任务逐项与 V8 一致（只有 hwu64 因全局缩放系数变化 0.425 → 0.450）。**变化的只是统计口径**：不再把"按设计用不了"的任务算进平均分。
 
 ---
 
@@ -122,11 +125,11 @@ python -m qwenjev.cli normalize --src data/raw --out data/ready
 # 2) 原型行（约 20 分钟，宽标签空间用）
 python train.py --no-balance --epochs 0 --items-per-label 12 --min-items-per-task 200 \
   --prototype-init --row-norm-cap auto --optimizer sgd --max-grad-norm 0 \
-  --model-dir models/_p4 --report artifacts/_p4.json
+  --model-dir models/prototype-rows --report artifacts/_p4.json
 
 # 3) 拼装交付模型（0-26 行保持预训练字母行，其余每个标签空间一块行）
 python scripts/compose_wide_rows.py \
-  --base models/_hybrid/readout.pt --wide models/_p4/readout.pt --data-dir data/ready \
+  --base models/shared-rows/readout.pt --wide models/prototype-rows/readout.pt --data-dir data/ready \
   --out models/qwenjev-multitask-v2/readout.pt
 
 # 4) 全量对比（28 个测试集 × Laya / 零样本 / 训练后）

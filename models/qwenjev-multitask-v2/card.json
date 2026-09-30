@@ -1,11 +1,70 @@
 {
-  "composed_from": {
-    "base": "D:\\QwenJev-Lite\\models\\_hybrid\\readout.pt",
-    "wide": "D:\\QwenJev-Lite\\models\\_p4\\readout.pt",
-    "answers": 485,
-    "reserved": 27,
-    "unplaced": 0
-  },
+  "readout": "slot_head",
   "rows": 512,
-  "trained_answers": 485
+  "reserved_rows": 27,
+  "private_rows": 485,
+  "label_spaces": 90,
+  "what_it_is": "Rows 0..26 stay the pretrained label rows (the fallback for an answer the head never saw); rows 27..511 are private, one block per (question, label space, answer) block in data/ready.",
+  "composed_from": {
+    "shared_rows": "models/shared-rows/readout.pt (alpha=0.5 of models/raw-trained-rows)",
+    "prototype_rows": "models/prototype-rows/readout.pt",
+    "data_dir": "data/ready"
+  },
+  "benchmark_v9": {
+    "laya": {
+      "bool": {
+        "accuracy": 0.5204,
+        "n_tasks": 7
+      },
+      "choice": {
+        "accuracy": 0.5015,
+        "n_tasks": 14
+      },
+      "score": {
+        "accuracy": 0.2584,
+        "n_tasks": 7
+      },
+      "overall": {
+        "accuracy": 0.4455,
+        "n_tasks": 28
+      }
+    },
+    "qwen_zeroshot": {
+      "bool": {
+        "accuracy": 0.7169,
+        "n_tasks": 7
+      },
+      "choice": {
+        "accuracy": 0.7486,
+        "n_tasks": 12
+      },
+      "score": {
+        "accuracy": 0.6809,
+        "n_tasks": 7
+      },
+      "overall": {
+        "accuracy": 0.7218,
+        "n_tasks": 26
+      }
+    },
+    "qwen_trained": {
+      "bool": {
+        "accuracy": 0.7935,
+        "n_tasks": 7
+      },
+      "choice": {
+        "accuracy": 0.7276,
+        "n_tasks": 14
+      },
+      "score": {
+        "accuracy": 0.771,
+        "n_tasks": 7
+      },
+      "overall": {
+        "accuracy": 0.7549,
+        "n_tasks": 28
+      }
+    }
+  },
+  "report": "artifacts/REPORT_V9_CN.md"
 }

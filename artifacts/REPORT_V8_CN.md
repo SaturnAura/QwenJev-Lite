@@ -189,18 +189,18 @@ python scripts/build_extra_splits.py
 # 3) 原型行（一次前向，约 20 分钟；本模型用的是 --items-per-label 12）
 python train.py --no-balance --epochs 0 --items-per-label 12 --min-items-per-task 200 \
   --prototype-init --row-norm-cap auto --optimizer sgd --max-grad-norm 0 \
-  --model-dir models/_p3 --report artifacts/_p3.json     # 见 §1.5
+  --model-dir models/prototype-rows --report artifacts/_p3.json     # 见 §1.5
 
 # 4a) 共享行的 α=0.5 混合（scripts/interpolate.py 会写出混合后的读出）
-python scripts/interpolate.py --checkpoint models/_v7/readout.pt --alphas 0.5 \
+python scripts/interpolate.py --checkpoint models/raw-trained-rows/readout.pt --alphas 0.5 \
   --tasks scifact_rel_bool arguana_rel_bool jigsaw goemotions mnli snli \
           banking77_top15 clinc150_top15 mmlu_pro scifact_rel_score jigsaw_severity \
-  --out models/_v7a05/readout.pt
+  --out models/shared-rows/readout.pt
 
 # 4b) 拼装交付模型：0–26 行保持预训练字母行，每个训练过的标签空间各拿一块私有行
 #     （<=26 选项的按标注文件里的位置从共享训练行拷贝，>26 选项的用原型行）
 python scripts/compose_wide_rows.py \
-  --base models/_v7a05/readout.pt --wide models/_p3/readout.pt --data-dir data/ready \
+  --base models/shared-rows/readout.pt --wide models/prototype-rows/readout.pt --data-dir data/ready \
   --out models/qwenjev-multitask-v2/readout.pt
 
 # 5) 全量对比测试（33 个测试集 × Laya / 零样本 / 训练后，约 39 分钟）

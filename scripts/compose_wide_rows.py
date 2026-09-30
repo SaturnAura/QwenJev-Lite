@@ -17,8 +17,8 @@ The composed head has three parts:
 * an answer in none of those blocks still falls back to its reserved row.
 
     python scripts/compose_wide_rows.py \\
-        --base models/_v7/readout.pt \\
-        --wide models/_p3/readout.pt \\
+        --base models/shared-rows/readout.pt \\
+        --wide models/prototype-rows/readout.pt \\
         --out models/qwenjev-multitask-v2/readout.pt
 """
 

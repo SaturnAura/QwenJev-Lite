@@ -74,6 +74,19 @@ def main() -> int:
     trained = torch.load(args.checkpoint, map_location=engine.device)["readout"]
     weight_key = "proj.weight"
     W_trained = trained[weight_key].float()
+    if W_trained.shape[0] != engine.readout.proj.weight.shape[0]:
+        # Older checkpoints were trained with a narrower head; rebuild the readout at
+        # the checkpoint's own width so the blend is exact (a 256-row head is the
+        # pretrained letter rows plus zeros, which is what it was trained from).
+        from qwenjev.readout import build_readout
+
+        engine.readout = build_readout(
+            "slot_head",
+            tokenizer,
+            backbone.get_output_embeddings(),
+            int(backbone.config.text_config.hidden_size),
+            max_slots=int(W_trained.shape[0]),
+        ).to(engine.device)
     W0 = engine.readout.proj.weight.detach().float().clone()  # reserved letter rows
 
     items_by_task = {}

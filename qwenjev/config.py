@@ -58,6 +58,12 @@ class QwenJevConfig:
     branch_batch_size: int = 64
     #: A batch also stops growing once ``branches x longest_branch`` exceeds this.
     max_batch_tokens: int = 8192
+    #: The row-batched path (:meth:`QwenJevLite.decide_batch`) re-encodes every state
+    #: once per branch. When ``state_tokens x branches`` reaches this many tokens, it is
+    #: cheaper to prefill each state once and run its branches from the cache instead -
+    #: measured 12x on a 6,000-character state with 64 questions (0.4 s against 4.7 s
+    #: per request). Set to 0 to always row-batch.
+    state_reuse_tokens: int = 800
 
     def __post_init__(self) -> None:
         if self.readout not in {"reserved_label", "slot_head", "pointer"}:
@@ -66,5 +72,7 @@ class QwenJevConfig:
             raise ValueError("branch_batch_size must be >= 1")
         if self.max_batch_tokens < 1:
             raise ValueError("max_batch_tokens must be >= 1")
+        if self.state_reuse_tokens < 0:
+            raise ValueError("state_reuse_tokens must be >= 0")
         if self.state_cache_size < 0:
             raise ValueError("state_cache_size must be >= 0")

@@ -294,6 +294,16 @@ class QwenJevLite:
         numbers as calling :meth:`decide` once per request.
         """
 
+        requests = list(requests)
+        if self.prefers_shared_prefill(requests):
+            # A long state times many branches costs more to re-encode per branch than
+            # to prefill once, so hand these to the cached path (same answers, same
+            # ordering - see tests/test_engine_tiny.py for the equality check).
+            return [
+                self.decide(state, questions, share_state=True, return_hidden=return_hidden)
+                for state, questions in requests
+            ]
+
         t_start = time.perf_counter()
         prepared = []
         for state, questions in requests:
@@ -437,6 +447,29 @@ class QwenJevLite:
                 )
             )
         return responses
+
+    def prefers_shared_prefill(self, requests: Sequence[tuple[str, Any]]) -> bool:
+        """Whether the cached per-state path beats row-batching for these requests.
+
+        Row-batching pays off when the states are short: one forward pass covers every
+        branch of every request, and the per-call overhead is paid once. It loses when a
+        state is long, because each branch carries its own copy of it - so the decision
+        is made on ``state tokens x branches`` per request.
+        """
+
+        budget = self.config.state_reuse_tokens
+        if not budget:
+            return False
+        for state, questions in requests:
+            branches = len(questions)
+            if branches < 2:
+                continue
+            state_tokens = len(
+                self.tokenizer(render_state(state), add_special_tokens=False)["input_ids"]
+            )
+            if state_tokens * branches >= budget:
+                return True
+        return False
 
     def _chunk_rows(
         self,
