@@ -1,5 +1,5 @@
 {
-  "model_dir": "models\\_v7",
+  "model_dir": "models/raw-trained-rows",
   "backbone": "C:\\qwen3.5-4B",
   "readout": "slot_head",
   "objective": "log_loss",
@@ -107,5 +107,28 @@
   "lr": 0.0005,
   "anchor": 0.01,
   "batch_size": 8,
-  "seed": 0
+  "seed": 0,
+  "note": "Historical run that produced the shared rows: RLCD (log_loss on outcomes, readout only, backbone frozen) over the pre-cleanup 33-task mix. The dropped tasks in `tasks` below are why this card is 30 tasks long; only the shared rows are taken from it, and models/shared-rows blends them halfway back.",
+  "live_tasks": [
+    "arguana_rel_bool",
+    "arguana_rel_choice",
+    "arguana_rel_score",
+    "goemotions",
+    "goemotions_sentiment",
+    "intentgrasp",
+    "jigsaw",
+    "jigsaw_severity",
+    "mnli",
+    "nfcorpus_rel_bool",
+    "nfcorpus_rel_choice",
+    "nfcorpus_rel_score",
+    "scidocs_rel_bool",
+    "scidocs_rel_choice",
+    "scidocs_rel_score",
+    "scifact_rel_bool",
+    "scifact_rel_choice",
+    "scifact_rel_score",
+    "snli",
+    "truthfulqa"
+  ]
 }
