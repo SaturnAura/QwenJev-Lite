@@ -14,7 +14,7 @@
 
 </div>
 
-> 中文版见 [`README_CN.md`](README_CN.md).
+> Chinese version: [`README_CN.md`](README_CN.md).
 
 QwenJev-lite turns a transformer into a **typed decision model**: the shared state is
 encoded once, every question becomes an isolated branch, and inference ends in a
