@@ -1,24 +1,20 @@
-"""Build the training splits the choice tasks were missing.
+"""Build the training splits that the sources do not ship.
 
-The formatted mix in ``data/ready`` leaves several choice label spaces with *no*
-training data at all, or with almost none:
+The formatted mix in ``data/ready`` is missing training data for a few *choice* label
+spaces:
 
-* MMLU-Pro ships 70 labelled validation rows for 10-way questions;
 * CLINC150 / HWU64 only became trainable once their integer labels were named, and
-  the 15-intent subsets that the test set scores are a *different* label space from
-  the full 150- / 64-intent one;
-* BANKING77 ships no training split at all.
+  the 15-intent subsets the test set scores are a *different* label space from the
+  full 150- / 64-intent one;
+* both of those sources ship an official training parquet, so the subsets can be built
+  from it rather than re-split.
 
-Every split written here is disjoint from the test rows it will be scored on: the
-evaluation indices are computed with the same :func:`qwenjev.normalize._iter_limited`
-helper the normaliser used, and are excluded from the training rows.
+Every split written here is disjoint from the rows it will be scored on, and the label
+spaces are checked against the test file before anything is written: a training split
+whose criteria disagree with the test set would train rows that the test never reads.
 
     python scripts/build_extra_splits.py
-    python scripts/build_extra_splits.py --mmlu-limit 6000 --top15-limit 2000
-
-The label spaces are checked against the test files before anything is written: a
-training split whose criteria disagree with the test set would train rows that the
-test never reads, which is the exact failure this project is fixing.
+    python scripts/build_extra_splits.py --top15-limit 2000
 """
 
 from __future__ import annotations
@@ -101,50 +97,6 @@ def _test_criteria_keys(test_path: Path) -> set[str]:
     return set(record["questions"]["intent"]["criteria"])
 
 
-def build_mmlu_pro(raw_dir: Path, out_dir: Path, limit: int) -> dict:
-    """Training rows for MMLU-Pro, taken from the test file's unused rows."""
-
-    source = next(raw_dir.joinpath("MMLU-Pro").glob("test-*.parquet"))
-    rows = _read_any(source)
-    held_out = set(_iter_limited(rows, TEST_LIMIT))
-    train_rows = [row for i, row in enumerate(rows) if i not in held_out]
-    # Spread over the whole complement rather than the first *limit* rows.
-    picked = [train_rows[i] for i in _iter_limited(train_rows, limit)]
-
-    letters = lambda n: [chr(ord("A") + i) for i in range(n)]  # noqa: E731
-    items = []
-    for index, row in enumerate(picked):
-        options = [str(option) for option in _as_list(row.get("options"))]
-        answer = _int_or_none(row.get("answer_index"))
-        if answer is None:
-            raw = row.get("answer")
-            if isinstance(raw, str) and len(raw.strip()) == 1:
-                answer = ord(raw.strip().upper()) - ord("A")
-            else:
-                answer = _int_or_none(raw)
-        if not options or answer is None or not 0 <= answer < len(options):
-            continue
-        category = _clean(row.get("category", ""))
-        items.append(
-            item(
-                dataset="mmlu_pro",
-                split="train",
-                index=row.get("question_id", index),
-                state=(f"Category: {category}\n" if category else "") + _clean(row.get("question", "")),
-                questions={
-                    "answer": choice_question(
-                        "Which option is correct?",
-                        {letter: _clean(opt) for letter, opt in zip(letters(len(options)), options)},
-                    )
-                },
-                targets={"answer": letters(len(options))[answer]},
-                source=source,
-                meta={"category": category, "n_options": len(options), "from_test_file": True},
-            )
-        )
-    return {"items": items, "source": source, "held_out": len(held_out)}
-
-
 def intent_pairs_from_tsv(path: Path) -> list[tuple[str, str]]:
     """``(utterance, intent)`` from a header-less ``utterance<TAB>intent`` file."""
 
@@ -182,7 +134,6 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--raw", default=str(ROOT / "data" / "raw"))
     parser.add_argument("--out", default=str(ROOT / "data" / "ready"))
-    parser.add_argument("--mmlu-limit", type=int, default=6000, help="MMLU-Pro training rows (0 = all)")
     parser.add_argument("--full-limit", type=int, default=4000, help="CLINC150/HWU64 full-space rows")
     parser.add_argument("--top15-limit", type=int, default=2000, help="rows per 15-intent subset")
     args = parser.parse_args()
@@ -207,11 +158,6 @@ def main() -> int:
         written[f"{name}_{split}"] = {**summary, "source": source.name, "matches": expect.name}
         print(f"  {name}_{split:<20} {summary['items']:>6} items  {summary['decisions']:>6} decisions"
               f"  (answers cover {expect.name}: {len(mine)} rows)")
-
-    print("MMLU-Pro")
-    built = build_mmlu_pro(raw_dir, out_dir, args.mmlu_limit)
-    emit("mmlu_pro", built["items"], dataset="mmlu_pro", split="train",
-         source=built["source"], expect=out_dir / "mmlu_pro_test.jsonl")
 
     for key, patterns in (
         ("clinc150", ("train-*.parquet", "train")),
@@ -239,32 +185,6 @@ def main() -> int:
             subset = _subset(everything, _test_criteria_keys(top15), dataset=f"{key}_top15", split="train", source=train_file)
             subset = subset[: args.top15_limit] if args.top15_limit else subset
             emit(f"{key}_top15", subset, dataset=f"{key}_top15", split="train", source=train_file, expect=top15)
-
-    # BANKING77 has no training file at all: the labelled TSV is used, minus the
-    # rows the test split was built from.
-    bank_dir = raw_dir / "BANKING77"
-    tsv = next(iter(sorted(bank_dir.glob("*tfidf*.tsv"))), None)
-    if tsv is not None:
-        pairs = intent_pairs_from_tsv(tsv)
-        held_out = set(_iter_limited(pairs, TEST_LIMIT))
-        leftovers = [pair for i, pair in enumerate(pairs) if i not in held_out]
-        print(f"BANKING77 ({len(leftovers)} rows left after removing the {len(held_out)} test rows)")
-        # The label space is the one the test file declares, so both sides agree even
-        # if the left-over rows happen to miss a class.
-        space = _test_criteria_keys(out_dir / "banking77_test.jsonl") if (out_dir / "banking77_test.jsonl").is_file() else None
-        full = intent_items(
-            leftovers,
-            dataset="banking77",
-            split="train",
-            source=tsv,
-            label_space=space or {label for _, label in pairs},
-        )
-        emit("banking77", full, dataset="banking77", split="train", source=tsv,
-             expect=out_dir / "banking77_test.jsonl")
-        top15 = out_dir / "banking77_top15_test.jsonl"
-        if top15.is_file():
-            subset = _subset(full, _test_criteria_keys(top15), dataset="banking77_top15", split="train", source=tsv)
-            emit("banking77_top15", subset, dataset="banking77_top15", split="train", source=tsv, expect=top15)
 
     (ROOT / "artifacts").mkdir(exist_ok=True)
     (ROOT / "artifacts" / "extra_splits.json").write_text(

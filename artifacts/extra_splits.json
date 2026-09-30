@@ -1,14 +1,4 @@
 {
-  "mmlu_pro_train": {
-    "file": "data/ready/mmlu_pro_train.jsonl",
-    "items": 6000,
-    "decisions": 6000,
-    "question_ids": [
-      "answer"
-    ],
-    "source": "test-00000-of-00001.parquet",
-    "matches": "mmlu_pro_test.jsonl"
-  },
   "clinc150_train": {
     "file": "data/ready/clinc150_train.jsonl",
     "items": 4000,
@@ -48,25 +38,5 @@
     ],
     "source": "train-00000-of-00001 (1).parquet",
     "matches": "hwu64_top15_test.jsonl"
-  },
-  "banking77_train": {
-    "file": "data/ready/banking77_train.jsonl",
-    "items": 370,
-    "decisions": 370,
-    "question_ids": [
-      "intent"
-    ],
-    "source": "banking77-tfidf-testset.tsv",
-    "matches": "banking77_test.jsonl"
-  },
-  "banking77_top15_train": {
-    "file": "data/ready/banking77_top15_train.jsonl",
-    "items": 73,
-    "decisions": 73,
-    "question_ids": [
-      "intent"
-    ],
-    "source": "banking77-tfidf-testset.tsv",
-    "matches": "banking77_top15_test.jsonl"
   }
 }
