@@ -328,11 +328,16 @@ print(engine.decide("My payouts have failed three times.", {
 
 ## 速度
 
-单位说清楚：Laya **一次调用答一个问题**、并为每个问题重新编码 state；本引擎**一次调用答完同一个
-state 上的全部问题**（先共享预填，再并行分支），所以每次调用的成本几乎不随问题数增长。实测
-（RTX 3090，torch 2.6+cu126，未装融合算子）：
+**下表所有数字都是「纯 torch 回退路径」的结果。** 本机没有 Triton、也没有 CUDA toolkit，
+因此 `flash-linear-attention` 与 `causal-conv1d` **都没有安装**：24 层线性注意力跑的是 torch
+实现（环境：`torch 2.6.0+cu126`、`transformers 5.14`、RTX 3090 / SM86；另外 8 层全注意力本身
+已经走 SDPA）。**本仓库没有任何"带 flash attention"的数字** —— 这里的融合算子装不上，我们宁可
+明确标注"这是慢路径"，也不引用一个没实测过的数字。
 
-| 场景 | 本引擎 | Laya |
+单位说清楚：Laya **一次调用答一个问题**、并为每个问题重新编码 state；本引擎**一次调用答完同一个
+state 上的全部问题**（先共享预填，再并行分支），所以每次调用的成本几乎不随问题数增长。
+
+| 场景 | 本引擎（纯 torch 回退） | Laya |
 |---|---|---|
 | 26 项全量评测（每次调用 16 个 item） | 2.5 s/次调用（约 68 决策）→ **36.7 ms/决策** | 23 ms/次调用 → **23.4 ms/决策** |
 | 1 个问题（15 选项、短 state） | 94 ms | ~25 ms |
@@ -340,11 +345,15 @@ state 上的全部问题**（先共享预填，再并行分支），所以每次
 | 换成 6000 字符的长 state | 461 / 297 / 1655 ms 每次调用 | 26 / 191 / 1621 ms |
 
 读法：本引擎的**每次调用成本几乎是平的**（state 只预填一次，每多一个问题约 +20 ms），Laya 是线性
-的；墙钟在"一个 state 约 64 个问题"处打平，之后本引擎更省；按**决策**摊我们慢 1.0–1.6 倍。融合
-算子（`flash-linear-attention` + `causal-conv1d`）能显著改变这个比例，但本机装不了：
-`causal-conv1d` 没有 Windows 轮子且缺 `nvcc`，`flash-linear-attention` 依赖 Triton
-（`torch.compile` 同样依赖它）。Linux 上 `pip install flash-linear-attention causal-conv1d`
-即可打开快路径；`scripts/speed_compare.py` 可复现上表。
+的；墙钟在"一个 state 约 64 个问题"处打平，之后本引擎更省；在这条回退路径上，按**决策**摊我们慢
+1.0–1.6 倍。
+
+融合算子正是那条"线性注意力融合路径"需要的，所谓"1500 个问题几百毫秒"属于那个量级 ——
+**装上之后上表会变快，但我们不给没实测过的估计值**。本机装不上的原因：`causal-conv1d` 没有
+Windows 轮子、自己编译需要 `nvcc`；`flash-linear-attention` 依赖 Triton（`torch.compile` 同样
+依赖它，所以那条路也堵着）。Linux 上 `pip install flash-linear-attention causal-conv1d` 即可打开
+快路径；`scripts/speed_compare.py` 能复现上表（任何 state 长度与问题数），等快路径可用时用同一个
+脚本直接测即可。
 
 ## 目录结构
 

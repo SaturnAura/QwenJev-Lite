@@ -179,9 +179,8 @@ proportion to how much probability they claimed.
 
 **Why "calibrated" is the point.** A classifier that only has to be argmax-correct can be
 arbitrarily over-confident; here over-confidence is paid for directly by the loss, and the
-result is checked with ECE. On the 26-task benchmark the trained readout reaches
-**0.125** mean ECE against 0.158 (untrained readout) and 0.289 (Laya), while *also*
-improving accuracy.
+result is checked with ECE. On the benchmark the trained readout reaches **0.125** mean ECE
+against 0.158 (untrained readout) and 0.289 (Laya), while *also* improving accuracy.
 
 **What makes it "reinforcement"-flavoured rather than plain supervised learning** is what
 it consumes and what it can learn: the supervision is a *decision plus its outcome*
@@ -382,12 +381,20 @@ list is in [References](#references).
 
 ## Speed
 
-Units matter, so both are spelled out. Laya answers **one question per call** and
+**Every number below is the pure-torch fallback.** This machine has no Triton and no CUDA
+toolkit, so `flash-linear-attention` and `causal-conv1d` are **not installed**: the 24
+linear-attention layers run the torch implementation (`torch 2.6.0+cu126`,
+`transformers 5.14`, RTX 3090 / SM86; the 8 full-attention layers already run on SDPA).
+**No flash-attention number is claimed anywhere in this repository** - the kernels could
+not be installed here, and we would rather report the slow path explicitly than quote a
+number we did not measure.
+
+Units matter, so both are spelled out: Laya answers **one question per call** and
 re-encodes the state for each one; this engine answers **every question about one state in
 one call** (a shared prefill, then the branches), so its per-call cost barely moves with
-the number of questions. Measured here (RTX 3090, torch 2.6+cu126, no fused kernels):
+the number of questions.
 
-| work | ours | Laya |
+| work | ours (torch fallback) | Laya |
 |---|---|---|
 | the 26-task benchmark, 16 items per call | 2.5 s/call (≈68 decisions) → **36.7 ms/decision** | 23 ms/call → **23.4 ms/decision** |
 | 1 question, 15 options, short state | 94 ms | ~25 ms |
@@ -396,12 +403,17 @@ the number of questions. Measured here (RTX 3090, torch 2.6+cu126, no fused kern
 
 Read the last two rows as cost *per call*: ours is flat (the state is prefilled once and
 each extra question costs ≈20 ms), Laya's is linear, so the wall clock meets at roughly 64
-questions on one state and stays with us after that; per *decision* we are 1.0–1.6× slower.
-The fused kernels would change that ratio, but they are not installable on this machine:
-`causal-conv1d` has no Windows wheel and needs `nvcc`, and `flash-linear-attention` needs
-Triton (which `torch.compile` wants too). On Linux,
-`pip install flash-linear-attention causal-conv1d` lights up the fast path.
-`scripts/speed_compare.py` reproduces the table for any state length and question count.
+questions on one state and stays with us after that; per *decision* we are 1.0–1.6×
+slower on this fallback path.
+
+The fused kernels are what the fused linear-attention path needs, and the
+"1,500 questions in a few hundred ms" regime belongs to them - so with those kernels the
+numbers above would improve, and we do not quote an estimate for it. Why they are missing
+here: `causal-conv1d` has no Windows wheel and building it needs `nvcc`, and
+`flash-linear-attention` needs Triton (which `torch.compile` needs as well, so that path
+is closed too). On Linux, `pip install flash-linear-attention causal-conv1d` enables the
+fast path; `scripts/speed_compare.py` reproduces the table above for any state length and
+question count, so the same script measures the fast path once it exists.
 
 ## Layout
 
