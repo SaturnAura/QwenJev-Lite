@@ -231,3 +231,6 @@ models/_*/
 data/raw/
 docs/
 _msg.txt
+
+# A copy of data/raw before the non-conforming datasets were dropped (0.7 GB).
+data/raw_backup/

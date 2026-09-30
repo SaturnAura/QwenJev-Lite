@@ -1,11 +1,11 @@
 {
   "composed_from": {
     "base": "D:\\QwenJev-Lite\\models\\_hybrid\\readout.pt",
-    "wide": "D:\\QwenJev-Lite\\models\\_p3\\readout.pt",
-    "answers": 598,
+    "wide": "D:\\QwenJev-Lite\\models\\_p4\\readout.pt",
+    "answers": 485,
     "reserved": 27,
     "unplaced": 0
   },
-  "rows": 625,
-  "trained_answers": 598
+  "rows": 512,
+  "trained_answers": 485
 }

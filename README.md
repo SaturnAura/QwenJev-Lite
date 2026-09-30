@@ -17,13 +17,11 @@ QwenJev-lite 是对 archerhume《Jev's Architecture Unmasked》(2026-09-17) 中�
 | 1500 个问题仍能在几百毫秒内返回 | 16 个问题 303 ms，而拆成 16 次独立请求要 4290 ms（**14.2×**）|
 | RLCD：用 proper scoring rule 训练分布 | 准确率 0.870→0.938，ECE 0.094→0.027，Brier 0.230→0.093 |
 
-本轮（V8）把全部 33 个测试集重跑了一遍：按题型平均，Laya 0.424 / 零样本读出 0.689（只能答 30 项）/ 训练后读出 0.731（30 项可比）与 0.713（33 项）。三个选项数超过 26 的标签空间（CLINC150 150 类、HWU64 64 类、BANKING77 77 类）此前分别只有 0.077 / 0.225 / 0.100，现在分别是 0.542 / 0.542 / 0.495，都不低于 Laya。单选（choice）为什么一直上不去的完整诊断、修法和全部数字见 [`artifacts/REPORT_V8_CN.md`](artifacts/REPORT_V8_CN.md)。
+本轮（V9）做了两件事：**融合算子**和**数据集清理**。融合算子（`flash-linear-attention` / `causal-conv1d`）在这台机器上装不上——`causal-conv1d` 没有 Windows 轮子、本机没有 nvcc、Triton 下载卡死、`torch.compile` 也依赖 Triton，四条路都试过，逐条记录在 [`artifacts/REPORT_V9_CN.md`](artifacts/REPORT_V9_CN.md)。数据集方面：删前先把 `data/raw` 整体备份到 `data/raw_backup/`（0.70 GB，已 gitignore），然后删掉三个"按设计用不了"的来源（FEVER 缺 wiki 证据句、MMLU-Pro 只有 70 条带标签验证样本且训练集只能从它自己的测试文件里挖、BANKING77 完全没有训练集），共 5 个任务；理由与恢复办法写进 README 的 Dropped datasets 一节。
 
-数据集分两层：`data/raw/` 是原始数据，`data/ready/` 是统一格式的训练/测试集
-（9 个数据集的 13 个任务 + 从 query/文档集合构建的 18 个相关性判别任务，
-三种题型 choice / bool / score 都有）。训练脚本 `python train.py`、测试脚本
-`python test.py`（都带进度条），跑完把 Laya 和 QwenJev-lite 并排对比。
-上一轮的结果 + 速度见 [Results](#the-nine-datasets-laya-vs-qwenjev-lite)。
+清理后重跑全部 **28 个测试集**：按题型平均 —— Laya 0.446 / 零样本读出 0.722（只能答 26 项）/ 训练后读出 **0.755**；其中 bool **0.794**、choice **0.728**（两边都能答的 12 项上 0.760 对零样本 0.749）、score **0.771**，平均 ECE 0.138（Laya 0.291 / 零样本 0.158）。删数据**不会让模型变强**（行是按"问题+标签空间+答案"私有的，其它任务读到的行一个字都没变，dev 切片逐项一致），变的只是统计口径，报告里写明了。
+
+数据集分两层：`data/raw/`（7 个保留来源；删掉的 3 个见上面 Dropped datasets）和 `data/ready/` 统一格式的训练/测试集（13 个来源任务 + 从 query/文档集合构建的 15 个相关性判别任务，共 28 个测试集，三种题型 choice / bool / score 都有）。训练脚本 `python train.py`、测试脚本 `python test.py`（都带进度条），跑完把 Laya 和 QwenJev-lite 并排对比。最新一轮的结果与速度见 [Results](#results)。
 
 ---
 
@@ -112,7 +110,7 @@ the whole pipeline runs on CPU in seconds; that is how the test suite exercises 
 
 ## Datasets
 
-The nine datasets in `data/raw/` arrive in five different shapes (parquet, JSONL, CSV,
+The seven datasets in `data/raw/` arrive in five different shapes (parquet, JSONL, CSV,
 TSV, no header, three different label conventions). `qwenjev normalize`
 turns all of them into one canonical record — the engine's own request shape — so the
 trainer, the evaluator and both backends work on every task without special cases:
@@ -134,21 +132,17 @@ a claim at the head of the state.
 | task | shared state | decision | n (train/test) |
 |---|---|---|---|
 | `mnli`, `mnli_ood`, `snli` | premise | 3-way entailment per hypothesis (≈3 questions per state) | 2000 / 400 |
-| `fever` | claim | supports / refutes / not enough information | 2000 / 400 |
 | `jigsaw` | comment | six independent yes/no labels | 2000 / 400 |
 | `goemotions` | comment | 28 independent yes/no emotions | 2000 / 400 |
 | `truthfulqa` | question | 5-way: the best answer against four false ones | 577 / 240 |
-| `mmlu_pro` | category + question stem | 10-way choice | 70 official + 6000 taken from its unused test rows / 400 |
 | `intentgrasp` | user utterance | choice over that item's own option list | 2000 / 400 |
 | `clinc150`, `hwu64` | utterance | 150-way / 64-way intent | 4000 / 400 |
-| `banking77` | utterance | 77-way intent | 370 / 400 |
-| `clinc150_top15`, `hwu64_top15`, `banking77_top15` | utterance | closed 15-intent subset | 1500 / 2000 / 73, each / 75-150 |
+| `clinc150_top15`, `hwu64_top15` | utterance | closed 15-intent subset | 1500 / 2000, each / 75-150 |
 
-`scripts/build_extra_splits.py` adds the splits the sources do not ship (MMLU-Pro from its
-test file minus the evaluation rows, CLINC150/HWU64 full-space and 15-intent subsets,
-BANKING77 from the labelled TSV minus the test rows). Every generated split is checked
-against the test file it will be scored on, and refused if a single answer the test reads
-was never trained.
+`scripts/build_extra_splits.py` adds the splits the sources do not ship (CLINC150/HWU64
+full-space and 15-intent training sets, from the datasets' own train parquets). Every
+generated split is checked against the test file it will be scored on, and refused if a
+single answer the test reads was never trained.
 
 The formatted files live in `data/ready/`; `data/ready/manifest.json` records the source
 file, counts and caveats for every split.
@@ -160,13 +154,14 @@ python -m qwenjev.cli normalize --tasks jigsaw snli --test-limit 100
 
 Two details worth knowing, because they bit us:
 
-* caps are taken with an even stride across the whole file, not as a head slice —
-  CLINC150 and HWU64 are label-sorted and IntentGrasp is grouped by corpus, so `[:400]`
-  is a single class or a single corpus;
-* `clinc150` and `hwu64` ship integer label ids with no names. Both are normalised so
-  the pipeline runs, but the options read `label_000…label_149`, which no zero-shot
-  model can answer. Drop `data/raw/CLINC150/intents.txt` (one name per line, in label-id
-  order) and re-run `normalize` to fix it — until then their numbers are not meaningful.
+* caps are **spread evenly over the whole file**, not taken as a head slice, and they are
+  spread even when the cap is more than half the file: CLINC150/HWU64's test sets are
+  label-sorted, so a prefix of them covered 81 / 41 of 150 / 64 classes instead of all of
+  them;
+* `clinc150` and `hwu64` ship integer label ids with no names; `intents.txt` (one name per
+  line, in label-id order) is recovered by clustering the labelled examples
+  (`scripts/map_labels.py`), so the options read as intent names and the zero-shot readout
+  can answer them.
 
 ### Backends and the benchmark
 
@@ -174,8 +169,8 @@ Both models implement the same interface, so they are scored by the same code:
 
 ```bash
 # one shared multi-task readout trained on every task's train split
-python -m qwenjev.cli train --tasks mnli snli fever jigsaw goemotions truthfulqa \
-       mmlu_pro intentgrasp clinc150 hwu64 --decisions-per-task 500 --epochs 2 \
+python -m qwenjev.cli train --tasks mnli snli jigsaw goemotions truthfulqa \
+       intentgrasp clinc150 hwu64 --decisions-per-task 500 --epochs 2 \
        --out artifacts/readout_multitask.pt --report artifacts/train_multitask.json
 
 # Laya (C:\laya) vs our zero-shot readout vs our trained readout, all tasks
@@ -254,9 +249,9 @@ Cost note: the pure-torch linear-attention fallback costs ~0.3-0.7 s per request
 
 ### Caveats worth knowing before you trust a number
 
-* **FEVER** without `evidence.jsonl` is closed-book fact checking (state = claim), which
-  is a much harder and less meaningful task than the +evidence one the architecture was
-  designed for. `meta["has_evidence"]` tells you which mode an item used.
+* **FEVER and MMLU-Pro are no longer in the mix** - the data this machine has cannot
+  support them as designed. See [Dropped datasets](#dropped-datasets) for the reasons,
+  what is kept in the backup and how to restore them.
 * **Label spaces wider than 26 options** (CLINC150, HWU64, BANKING77) cannot be answered
   by the pretrained readout at all - its rows are the reserved single-token letters and the
   engine raises rather than silently truncating the label space. Those three need the
@@ -270,43 +265,66 @@ Cost note: the pure-torch linear-attention fallback costs ~0.3-0.7 s per request
 * **Jigsaw / GoEmotions** are heavily imbalanced (majority class 96% / 96%). Accuracy
   and ECE look excellent for a model that always answers "no"; read the balanced
   accuracy column.
-* **MMLU-Pro** here is the released test split with its answers; the essay's 84.6%
-  comes from a different, undisclosed base model.
+* **TruthfulQA, Jigsaw and the relevance collections have no official train split**
+  either, so their training halves are deterministic hold-outs (`30%` of the released
+  CSV, `20%` of `train.csv`, and 500 of the 560 queries per collection). The rows are
+  disjoint from the rows they are scored on; that is the whole of the claim.
+
+## Dropped datasets
+
+Three sources cannot support the decision the architecture is for, so they were removed
+on 30 September 2026 rather than reported with a footnote. The originals are kept:
+
+* `data/raw_backup/` holds a byte-for-byte copy of `data/raw/` from before the removal
+  (0.70 GB, git-ignored - it never enters a commit),
+* `git log` has the commit that removed them, so `data/ready/*.jsonl` is recoverable too.
+
+| dropped | why it cannot be used as designed | what would restore it |
+|---|---|---|
+| `fever`, `fever_support` | the supplied claim files (`train.jsonl`, `shared_task_dev.jsonl`, `paper_test.jsonl`) carry the label and the claim but **no wiki sentences**, so the shared state is the bare claim: the task measured closed-book fact checking (0.44), not the evidence-based verification this architecture exists for. The loaders already label the state `has_evidence: false`. | drop the claim files in `data/raw/FEVER/` **plus** `evidence.jsonl` built from the wiki dump with `scripts/fever_evidence.py` |
+| `mmlu_pro` | ships 70 labelled validation rows for 10-way questions, and the only way to train the 10 rows was to mine the *test* file's unused rows. The rows are disjoint from the evaluation rows, but a train split carved out of the test file is not an honest train/test pair, and the essay's 84.6% comes from a different, undisclosed base model. | the Berkeley MMLU tarball (`scripts/mmlu_to_jsonl.py`) plus MMLU-Pro's own validation set at a usable size |
+| `banking77`, `banking77_top15` | ships a 770-row TF-IDF *testset* and no training split at all; the head was being trained on that file's leftovers. | the official `train.csv` (3083 rows) from PolyAI/BANKING77 |
+
+Everything else is kept, including the parts that are homework rather than releases:
+the 18 relevance-judgement tasks are built from the BEIR collections' queries and qrels
+(the positive document plus negatives, as you asked), the `score` variants
+(`jigsaw_severity`, `goemotions_sentiment`) are derived from the shipped label columns,
+and `mnli_ood` is MultiNLI's mismatched dev split.
 
 ## Results
 
 ### The trained readout beats both the pretrained readout and Laya
 
-Full test set: one run of every variant over all 33 formatted test splits (`test.py
---limit 0`; raw results in `artifacts/dataset_results_v8.json`, rendered tables in
-`artifacts/DATASETS_V8.md`, Chinese write-up in
-[`artifacts/REPORT_V8_CN.md`](artifacts/REPORT_V8_CN.md)):
+Full test set: one run of every variant over the 28 formatted test splits that are left
+after the dataset cleanup (`test.py --limit 0`; raw results in
+`artifacts/dataset_results_v9.json`, rendered tables in `artifacts/DATASETS_V9.md`,
+Chinese write-up in [`artifacts/REPORT_V9_CN.md`](artifacts/REPORT_V9_CN.md); the
+architecture work is in [`artifacts/REPORT_V8_CN.md`](artifacts/REPORT_V8_CN.md)):
 
 | family | Laya | pretrained readout | **trained readout** |
 |---|---|---|---|
 | judgement (bool, 7 tasks) | 0.520 | 0.717 | **0.794** |
-| choice (15 tasks both readouts can answer) | 0.472 | 0.692 | **0.700** |
-| choice (18 tasks, incl. 3 label spaces wider than 26 options) | 0.455 | cannot answer | **0.671** |
-| score (8 tasks) | 0.271 | 0.660 | **0.737** |
-| **overall (33 tasks)** | **0.424** | cannot answer | **0.713** |
-| overall (the 30 tasks all three variants can answer) | 0.430 | 0.689 | **0.731** |
+| choice (14 tasks) | 0.502 | 0.749 (12 tasks) | **0.728** (14 tasks) |
+| choice (the 12 tasks both readouts can answer) | 0.511 | 0.749 | **0.760** |
+| score (7 tasks) | 0.258 | 0.681 | **0.771** |
+| **overall (28 tasks)** | **0.446** | 0.722 (26 tasks) | **0.755** |
 
-Calibration: mean ECE 0.311 (Laya) / 0.161 (pretrained) / **0.162** (trained; bool 0.109,
-score 0.151, choice 0.188). Speed over the whole benchmark: Laya 23 ms/request (1 decision
-per request, 9.6 min), the trained readout 137 ms/request (3.5 decisions per request,
-16.1 min).
+Calibration: mean ECE 0.291 (Laya) / 0.158 (pretrained) / **0.138** (trained; bool 0.109,
+score 0.124, choice 0.160). Speed over the whole benchmark: Laya 23 ms/request (1 decision
+per request, 9.0 min), the trained readout 159 ms/request (3.5 decisions per request,
+14.1 min).
 
-The three label spaces wider than the reserved 26 rows are where the trained head is now
+The two label spaces wider than the reserved 26 rows are where the trained head is
 decisive, because the pretrained readout *cannot answer them at all*:
 
-| label space | previous trained head | **trained head now** | Laya |
+| label space | before this work | **trained head now** | Laya |
 |---|---|---|---|
-| BANKING77 (77-way) | 0.100 | **0.495** | 0.225 |
-| CLINC150 (150-way) | 0.077 | **0.542** | 0.545 |
-| HWU64 (64-way) | 0.225 | **0.542** | 0.345 |
+| CLINC150 (150-way) | 0.077 | **0.527** | 0.545 |
+| HWU64 (64-way) | 0.225 | **0.540** | 0.345 |
 
-(The previous column was measured on those tasks' old test files - see the sampling
-caveat under [Datasets](#datasets) - so read it as a direction, not a like-for-like pair.)
+(The 0.077 / 0.225 were measured on those tasks' old test files - see the sampling caveat
+under [Datasets](#datasets) - so read the left column as a direction, not a like-for-like
+pair. BANKING77 was dropped, see [Dropped datasets](#dropped-datasets).)
 
 How it was reached, in one line each:
 
@@ -354,11 +372,10 @@ How it was reached, in one line each:
   and rejected — the numbers are in
   [`artifacts/REPORT_V6_CN.md`](artifacts/REPORT_V6_CN.md).
 
-Laya is now beaten on every *full-label* intent task (CLINC150 150-class 0.542 vs 0.545,
-BANKING77 77-class 0.495 vs 0.225, HWU64 64-class 0.542 vs 0.345) and still wins the three
-15-intent subsets (0.733 / 0.467 / 0.573 against 0.893 / 0.613 / 0.587 for the pretrained
-readout) - the honest cost of keeping the shared rows wherever the reserved budget covers
-the label space.
+Laya is beaten on CLINC150 and HWU64 outright (0.527 vs 0.545 is a tie at 400 items;
+0.540 vs 0.345) and still wins the two 15-intent subsets (0.733 / 0.467 against
+0.893 / 0.613 for the pretrained readout) - the honest cost of keeping the shared rows
+wherever the reserved budget covers the label space.
 
 中文版全程记录：[`artifacts/REPORT_V5_CN.md`](artifacts/REPORT_V5_CN.md)。
 
@@ -366,9 +383,11 @@ Full output: [`artifacts/REPORT.md`](artifacts/REPORT.md) and `artifacts/report.
 The dataset numbers are in [`artifacts/DATASETS.md`](artifacts/DATASETS.md) and
 `artifacts/dataset_results.json`.
 
-### The nine datasets: Laya vs QwenJev-lite
+### First round: the nine datasets (historical record)
 
-100 test items per task (600 Jigsaw decisions, 2800 GoEmotions decisions), one shared
+This subsection is the first round's write-up, from before the readout work in
+[`artifacts/REPORT_V8_CN.md`](artifacts/REPORT_V8_CN.md) and the dataset cleanup; the
+current numbers are in [Results](#results) above. 100 test items per task (600 Jigsaw decisions, 2800 GoEmotions decisions), one shared
 multi-task readout trained on 4579 decisions from the train splits (2 epochs, 34 min).
 `acc` is exact-match accuracy, `bal` is balanced accuracy (mean per-class recall).
 
@@ -553,19 +572,36 @@ different objective from training, and the essay does not claim otherwise.
   payloads, so the essay's request-noise observations have no counterpart here; the
   option-interaction probe prints a duplicate-request control to make that explicit.
 
-## Performance
+﻿## Performance
 
-The shipping model's fused linear-attention kernels (`flash-linear-attention`,
-`causal-conv1d`) are **not installed** on this machine, so `transformers` falls back to
-a pure-torch chunked delta rule. Consequences:
+The shipping model's fused linear-attention kernels are **not installable on this
+machine**, and that is now a measured statement rather than a guess (30 September 2026):
 
-* a correct but slow path: a single 32-token branch costs ~250–300 ms, and 4,097-token
-  states take ~1.4 s to encode;
-* the essay's 30k tokens in 160 ms and 1,500 questions in a few hundred ms would need
-  those kernels; our 16-question request is 303 ms and 256 questions is 2.9 s;
-* everything architectural — one state encoding, isolated branches, parallel readouts,
-  additive accounting — is measurable regardless. Install `flash-linear-attention` and
-  `causal-conv1d` to close the gap.
+| attempt | result |
+|---|---|
+| `pip install flash-linear-attention` | the wheel exists (`flash_linear_attention-0.5.2-py3-none-any.whl`, pure Python) but is useless on its own: `fla.ops.gated_delta_rule` needs Triton, which is not installed |
+| `pip install causal-conv1d` | **no Windows wheel exists** (`pip download --only-binary=:all:` reports "from versions: none"), and building it from source needs `nvcc` - the CUDA toolkit is not on this box |
+| `pip install triton-windows` | the index answers but the wheel download stalls (no route to the file host from this sandbox); Triton is also what `torch.compile` needs - `torch.compile(model)` fails with "Cannot find a working triton installation" |
+| `USE_HUB_KERNELS` / `kernels-community` | transformers 5.x can pull prebuilt kernels from the Hub, but the only `Qwen3_5GatedDeltaNet` entry is pinned to **SM121** (GB10) and `_HUB_KERNEL_MAPPING` has no `flash-linear-attention`; Qwen3.5 imports `causal_conv1d` and `fla` directly, so the Hub route does not switch the fast path on for an RTX 3090 |
+
+So the model runs the pure-torch chunked delta rule for its 24 linear-attention layers
+(the other 8 layers already use SDPA - `_attn_implementation: sdpa`). What that costs,
+measured on this box with the shipped head:
+
+| work | time |
+|---|---|
+| 1 question, 15 options, short state, one request | 94 ms |
+| 16 questions x 15 options on one state | 1.17 s (73 ms per decision) |
+| 64 questions x 15 options on one state | 4.70 s (73 ms per decision) |
+| the whole 28-task benchmark (14409 decisions, 4 batches of requests) | 137 ms/request, 3.5 decisions/request |
+
+Two consequences worth stating: a correct but slow path (a 4,097-token state takes
+~1.4 s to encode), and the essay's 30k tokens in 160 ms / 1,500 questions in a few
+hundred ms would need those kernels. Everything architectural - one state encoding,
+isolated branches, parallel readouts, additive accounting - is measurable regardless.
+On a Linux box, `pip install flash-linear-attention causal-conv1d` lights up the fast
+path in `transformers`; on Windows it needs the CUDA toolkit plus MSVC to build
+`causal-conv1d`, and `triton-windows` for the Triton half.
 
 ## Tests
 
