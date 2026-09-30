@@ -10,7 +10,7 @@
 
 Every question is typed (``bool`` / ``choice`` / ``score``), all of them are answered
 in a single forward pass, and the output is a distribution per question - no text is
-generated. ``--model-dir`` picks the trained readout (``readout.pt``); without it the
+generated. ``--checkpoint-dir`` picks the trained readout (``readout.pt``); without it the
 pretrained readout is used.
 """
 
@@ -130,7 +130,8 @@ def main() -> int:
     parser.add_argument("--choice", nargs="*", default=[], help='"instruction"=key=desc,key=desc')
     parser.add_argument("--score", nargs="*", default=[], help='"instruction"=level,level,level')
     parser.add_argument("--model", default=None, help="backbone path or Hub repo id (default $QWENJEV_MODEL)")
-    parser.add_argument("--model-dir", default="models/qwenjev-multitask-v2",
+    parser.add_argument("--checkpoint-dir", "--model-dir", dest="checkpoint_dir",
+                        default="models/qwenjev-multitask-v2",
                         help="folder with the trained readout.pt (omit to use the pretrained readout)")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--json", action="store_true", help="print the raw payload instead")
@@ -158,9 +159,9 @@ def main() -> int:
 
     from qwenjev.engine import QwenJevLite
 
-    checkpoint = Path(args.model_dir) / "readout.pt" if args.model_dir else None
+    checkpoint = Path(args.checkpoint_dir) / "readout.pt" if args.checkpoint_dir else None
     if checkpoint and not checkpoint.is_file():
-        print(f"no trained readout at {checkpoint}; run `python train.py` or drop --model-dir",
+        print(f"no trained readout at {checkpoint}; run `python train.py` or drop --checkpoint-dir",
               file=sys.stderr)
         checkpoint = None
     config = QwenJevConfig(

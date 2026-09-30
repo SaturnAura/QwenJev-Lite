@@ -18,19 +18,19 @@
 
 QwenJev-lite 将 Transformer 形式化为一个**类型化决策模型**：共享状态仅编码一次，每个问题构成一条相互隔离的分支，推理末端输出的并非生成文本，而是**允许答案上的概率分布**。问题具有类型 —— 有限选择 `choice`、是/否 `bool`、有序打分 `score` —— 同一 state 上可一次性完成多种类型的提问。
 
-骨架为 **Qwen3.5-4B**（32 层：24 层线性注意力 + 8 层全注意力，4.54B 参数），训练**仅更新末端一个 512 行的决策头**（约 5 MB），因此整轮实验可在单张 24 GB 显卡上完成。在 26 个测试集上总体 **0.772**，同一个头**未训练**时为 **0.722**。
+骨架为 **Qwen3.5-4B**（32 层：24 层线性注意力 + 8 层全注意力，4.54B 参数 —— 4.21B 语言 + 0.33B 视觉，骨架本身就是多模态的），训练**仅更新末端一个 512 行的决策头**（约 5 MB），因此整轮实验可在单张 24 GB 显卡上完成。在 26 个测试集上总体 **0.772**，同一批保留标签行**完全不训练**直接当读出时为 **0.722**（`qwen_zeroshot`）。
 
 ```bash
 pip install -r requirements.txt
 export QWENJEV_MODEL=/path/to/qwen3.5-4B      # Windows: $env:QWENJEV_MODEL="D:\qwen3.5-4B"
-python demo.py --model-dir models/qwenjev-multitask-v2
+python demo.py --checkpoint-dir models/qwenjev-multitask-v2
 ```
 
 ## 结果
 
-完整评测命令是 `python test.py --limit 0`，在 26 个两个头都能作答的测试集上进行（bool 7 + choice 12 + score 7）。表中数值为准确率；原始数据见 [`artifacts/results.json`](artifacts/results.json)，逐任务明细见 [`artifacts/RESULTS_CN.md`](artifacts/RESULTS_CN.md)。
+完整评测命令是 `python test.py --limit 0`，在 26 个两个变体都能作答的测试集上进行（bool 7 + choice 12 + score 7）。表中数值为准确率；原始数据见 [`artifacts/results.json`](artifacts/results.json)，逐任务明细见 [`artifacts/RESULTS_CN.md`](artifacts/RESULTS_CN.md)。
 
-| 题型/准确率 | 未训练的决策头 | **我们训练后的模型** |
+| 题型/准确率 | 预训练读出（`qwen_zeroshot`） | **我们训练后的模型** |
 | --- | --- | --- |
 | 判断 `bool`（7 项） | 0.717 | **0.794** |
 | 单选 `choice`（12 项） | 0.749 | **0.760** |
@@ -46,14 +46,14 @@ pip install -r requirements.txt          # torch 2.6 + transformers 5.14；跑�
 
 export QWENJEV_MODEL=/path/to/qwen3.5-4B # Windows: $env:QWENJEV_MODEL="D:\qwen3.5-4B"
 
-python demo.py --model-dir models/qwenjev-multitask-v2   # 一个 state，三种题型，一次前向答完
+python demo.py --checkpoint-dir models/qwenjev-multitask-v2   # 一个 state，三种题型，一次前向答完
 python serve.py                                          # 同一件事的网页版（:8300）
 pytest -q                                                # 92 个测试，微型骨架，纯 CPU
 ```
 
 | 目标 | 命令 |
 | --- | --- |
-| 跑全量基准（未训练头 + 我们的模型，带进度条） | `python test.py --limit 0` |
+| 跑全量基准（预训练读出 + 我们的模型，带进度条） | `python test.py --limit 0` |
 | 训练决策头（四个输入，全部有默认值） | `python train.py --model /path/to/qwen3.5-4B` |
 | 由三个源文件重建交付的决策头 | [`models/README.md`](models/README.md#rebuild-the-shipped-head) |
 | 将原始数据转为统一格式 | `python -m qwenjev.cli normalize --src data/raw --out data/ready` |
@@ -69,11 +69,11 @@ pytest -q                                                # 92 个测试，微型
 | 输入 | 参数 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | base 模型 | `--model` | `$QWENJEV_MODEL`，否则 `./qwen3.5-4B` | 本地路径或 Hub repo id；引擎只读取隐藏状态，所以换其它 causal 骨架、或换成多模态骨架（图像/音频 token 放进 `state`）都可以 |
-| 决策头保存/读取地址 | `--model-dir` | *留空* → `models/qwenjev-run-<时间戳>` | 不存在会自动创建；`train.py` 往里写 `readout.pt` + `card.json`，`test.py` 从里面读 `readout.pt` |
+| 决策头保存/读取地址 | `--checkpoint-dir` | *留空* → `models/qwenjev-run-<时间戳>` | 不存在会自动创建；`train.py` 往里写 `readout.pt` + `card.json`，`test.py` 从里面读 `readout.pt` |
 | 数据地址 | `--data-dir` | `data/ready` | 一个目录，里面每个任务一对 `<task>_train.jsonl` / `<task>_test.jsonl`（`<task>_<split>.jsonl` 都行） |
 | 超参数 | `--epochs`、`--lr`、`--batch-size`、`--objective`、`--items-per-label`、`--min-items-per-task`、`--prototype-init`、`--optimizer` 等 | 见 `python train.py --help` | `test.py` 另有 `--limit`、`--batch`、`--variants` |
 
-对 `test.py` 来说，`--model-dir` 留空表示**使用交付的决策头**；如果磁盘上没有这个头，它会自动只评测未训练头，而不是报错。结果写到 `--out` / `--markdown`（父目录会自动创建），默认 `artifacts/results.json` 与 `artifacts/RESULTS.md`。
+对 `test.py` 来说，`--checkpoint-dir` 留空表示**使用交付的决策头**；如果磁盘上没有这个头，它会自动只评测预训练读出，而不是报错。结果写到 `--out` / `--markdown`（父目录会自动创建），默认 `artifacts/results.json` 与 `artifacts/RESULTS.md`。
 
 **数据格式。** 一个目录、每个任务两个文件。文件是 **JSONL：一行一条记录** —— 一行一个 JSON 对象，**不要美化换行**（多行记录会被拒绝，并提示来看这一节）。一条记录就是引擎的请求形状加上实际结果，三种题型都覆盖。下面三行故意很长，这就是文件里一行的样子。
 
@@ -107,7 +107,7 @@ python train.py \
   --objective log_loss \
   --items-per-label 12 --min-items-per-task 200 --prototype-init
 # 也可以自己指定这次运行：
-#   --model-dir models/my-run            （不存在会自动创建）
+#   --checkpoint-dir models/my-run            （不存在会自动创建）
 #   --epochs 0                           （0 = 只用闭式原型行，不做梯度步）
 ```
 
@@ -119,7 +119,7 @@ python train.py \
 python test.py \
   --model /path/to/qwen3.5-4B \
   --data-dir data/ready \
-  --model-dir models/my-run \
+  --checkpoint-dir models/my-run \
   --variants qwen_zeroshot qwen_trained \
   --limit 0 --batch 16 \
   --out artifacts/my-results.json
@@ -145,7 +145,7 @@ print(engine.decide("My payouts have failed three times.", {
 
 ## 数据
 
-`data/ready/` 随仓库提供（约 92 MB 的 JSONL）：统一格式的 train/test 集，外加 `manifest.json`，记录每个 split 的来源文件、条数与注意事项。用到的来源：
+`data/ready/` 随仓库提供（约 97 MB 的 JSONL）：统一格式的 train/test 集，外加 `manifest.json`，记录每个 split 的来源文件、条数与注意事项。用到的来源：
 
 | 来源 | 提供哪些任务 |
 | --- | --- |
@@ -180,13 +180,13 @@ print(engine.decide("My payouts have failed three times.", {
 qwenjev/           库：schema / prompt / tokenize / readout / engine / rlcd / calibration /
                    datasets / normalize / relevance / backends / benchmark / probes / api / cli
 train.py           用数据目录里的 train split 训练一个决策头（带进度条）
-test.py            在 test split 上评测未训练头 + 我们的模型（带进度条）
+test.py            在 test split 上评测预训练读出 + 我们的模型（带进度条）
 demo.py serve.py   面向用户的命令行演示 / 网页演示
 scripts/           build_extra_splits / compose_wide_rows / interpolate / dev_score /
                    map_labels / compare_results / speed_compare / split_csv
                    （另有一些把别的镜像转成统一格式的转换脚本）
 models/            交付的决策头 + 组成它的三个源文件
-data/ready/        统一格式的 train/test JSONL + manifest.json（在仓库里，约 92 MB）
+data/ready/        统一格式的 train/test JSONL + manifest.json（在仓库里，约 97 MB）
 data/raw/          原始数据（gitignore）
 artifacts/         RESULTS_CN.md（最终结果）、results.json（原始评测数据）、
                    extra_splits.json（补齐训练集的出处）
@@ -233,7 +233,7 @@ Brier    :  L = Σ_k (p_k − 1{y = k})²
 
 即：每条样本把"实际发生"的那一行推高，其余行按它们当前认领的概率比例推低。
 
-**为什么校准是关键。** 只以 argmax 正确与否来评判的分类器可以任意过信；而这里**过信会被损失直接惩罚**，并用 ECE 检查 —— 在 26 项基准上，我们训练后的模型平均 ECE 为 **0.125**，未训练头为 **0.158**，同时准确率还更高。
+**为什么校准是关键。** 只以 argmax 正确与否来评判的分类器可以任意过信；而这里**过信会被损失直接惩罚**，并用 ECE 检查 —— 在 26 项基准上，我们训练后的模型平均 ECE 为 **0.125**，预训练读出为 **0.158**，同时准确率还更高。
 
 **为什么它带有"强化"的成分。** 监督信号是**决策加结果**（`state → 问题 → 答案 → 实际发生`），被拟合的参数是"答案对应的行"，而**没训过的标签空间依然可用**（读回保留行）。因此同一个目标可以把已部署的模型扩展到新的答案集合，而不必为每个标签集重建一个头。本仓库实现的是该目标的**有监督形式**：backbone 冻结，用 log loss 或 Brier 拟合决策头（`train.py --objective log_loss|brier`）；在显存允许时，同样的损失也可以带上 backbone 的梯度。
 
@@ -261,7 +261,7 @@ Brier    :  L = Σ_k (p_k − 1{y = k})²
 
 ## 我们对模型与数据做了哪些改编
 
-**模型方面。** 我们用决策头取代了解码循环与固定分类器 —— 在允许答案上算 `z = W h + b` 再做 softmax，**不生成任何 token**，因此延迟不随输出长度增长。**保留标签行优先**：未训练的决策头把预训练头在选项标签 token 上的质量重新归一化，K ≤ 26 时无需训练即可工作，同时为训练后的模型提供初始化与"没见过的答案"的回落。**共享预填 + 分支隔离**：state 只编码一次进 KV/递推缓存，缓存按分支展开，每条分支只注意 state 和自己的后缀，隔离是结构性的而不是提示词的约定。**分支按批调度**：在批大小与 token 预算下打包进一次前向，一个请求几次前向就能答完一个 state 上的全部问题。**选项按列表整体渲染**：所有选项作为一个有序列表放进分支，决策头读列表**之后**的位置，答案可以取决于整个候选集合。**类型化问题共用一套线格式**：训练器、评测器、CLI、HTTP 接口和两个后端读的是同一条记录。**一行对应一个答案**：行由 `(问题 id, 标签空间, 答案键)` 决定，所以同一组选项换个顺序仍读同一行，行也不会跨问题串味。**训练配方**：backbone 冻结 + RLCD（log loss 或 Brier）、每步把行投影回预训练对数尺度、共享行做 α=0.5 回拉、宽于保留预算的标签空间用闭式原型行、可选地在留出集上拟合温度。
+**模型方面。** 我们用决策头取代了解码循环与固定分类器 —— 在允许答案上算 `z = W h + b` 再做 softmax，**不生成任何 token**，因此延迟不随输出长度增长。**保留标签行优先**：预训练读出（`qwen_zeroshot`）把预训练头在选项标签 token 上的质量重新归一化，K ≤ 26 时无需训练即可工作，同时为训练后的模型提供初始化与"没见过的答案"的回落。**共享预填 + 分支隔离**：state 只编码一次进 KV/递推缓存，缓存按分支展开，每条分支只注意 state 和自己的后缀，隔离是结构性的而不是提示词的约定。**分支按批调度**：在批大小与 token 预算下打包进一次前向，一个请求几次前向就能答完一个 state 上的全部问题。**选项按列表整体渲染**：所有选项作为一个有序列表放进分支，决策头读列表**之后**的位置，答案可以取决于整个候选集合。**类型化问题共用一套线格式**：训练器、评测器、CLI、HTTP 接口和两个后端读的是同一条记录。**一行对应一个答案**：行由 `(问题 id, 标签空间, 答案键)` 决定，所以同一组选项换个顺序仍读同一行，行也不会跨问题串味。**训练配方**：backbone 冻结 + RLCD（log loss 或 Brier）、每步把行投影回预训练对数尺度、共享行做 α=0.5 回拉、宽于保留预算的标签空间用闭式原型行、可选地在留出集上拟合温度。
 
 **数据方面。** **每个数据集一条统一记录**：所有来源都归一化成引擎自己的请求形状（`{"state": …, "questions": {…}, "targets": {…}}`，一行一个 JSON），因此同一份文件同时服务训练、评测、CLI 和 HTTP 接口，没有按数据集分的代码路径。**一切都表达成类型化问题**：一个任务要么是带 `criteria` 的 `choice`、要么是 `criteria` 可省的 `bool`、要么是有序 `score`；是/否题同时给出 `instructions`（问句）与 `claim`（陈述句）两种措辞，因为两个后端各自在一种措辞上被测量过。**标签空间属于数据而不是代码**：`criteria` 的键就是答案身份，决策头把 `(问题 id, 标签空间, 答案键)` 映射到一行 —— 这就是"选项顺序不影响结果"和"多任务共用一个决策头却不互相干扰"的原因。**切分纪律**：每条训练行都与它被评测的行不重叠，截断取样在整个文件上均匀取而不是取前缀，本仓库自己构建的训练集（`artifacts/extra_splits.json`）写盘前会校验 —— 只要测试集要读的某个答案没被训练到，脚本就拒绝写。**按标签空间分配预算**：`--items-per-label` 保证 150 类任务不会被 2 答案任务挤掉。**精度**：backbone 跑 bf16，决策头保持 float32（训练步长约 1e-3，低于 bf16 在该量级的分辨率），对数也在 float32 里算。
 

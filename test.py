@@ -10,14 +10,14 @@ it to score - and each has a default:
     python test.py \
       --model /path/to/qwen3.5-4B \
       --data-dir data/ready \
-      --model-dir models/my-run \
+      --checkpoint-dir models/my-run \
       --variants qwen_zeroshot qwen_trained \
       --limit 0 --batch 16 \
       --out artifacts/my-results.json
 
 ``qwen_zeroshot`` is the untrained decision head (the pretrained label rows, no training);
-``qwen_trained`` loads ``<model-dir>/readout.pt`` produced by ``train.py``. Leaving
-``--model-dir`` empty uses the shipped head, or scores the untrained one only if that head
+``qwen_trained`` loads ``<checkpoint-dir>/readout.pt`` produced by ``train.py``. Leaving
+``--checkpoint-dir`` empty uses the shipped head, or scores the untrained one only if that head
 is not on disk. ``--variants laya`` is available if an external Laya checkpoint is
 installed, and is not needed otherwise.
 """
@@ -94,7 +94,7 @@ def build_variants(args):
             engine = QwenJevLite(model, tokenizer, config)
             variants.append(("qwen_zeroshot", QwenBackend(engine), "pretrained readout, no training"))
         if "qwen_trained" in wanted:
-            checkpoint = Path(args.model_dir) / "readout.pt"
+            checkpoint = Path(args.checkpoint_dir) / "readout.pt"
             if not checkpoint.is_file():
                 print(f"  no trained readout at {checkpoint} - run train.py first", file=sys.stderr)
             else:
@@ -112,9 +112,10 @@ def build_variants(args):
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data-dir", default="data/ready")
-    parser.add_argument("--model-dir", default="",
+    parser.add_argument("--checkpoint-dir", dest="checkpoint_dir", default="",
                         help="folder with the trained readout.pt; empty = the shipped head, "
                              "or the untrained head only if that is missing")
+    parser.add_argument("--model-dir", dest="checkpoint_dir", help=argparse.SUPPRESS)  # old name
     parser.add_argument("--model", default=None, help="backbone path or Hub repo id (default $QWENJEV_MODEL)")
     parser.add_argument("--laya-path", default=None, help="Laya checkpoint (default $QWENJEV_LAYA, else ./laya)")
     parser.add_argument("--device", default="cuda:0")
@@ -130,16 +131,16 @@ def main() -> int:
     args = parser.parse_args()
     args.model = args.model or default_model_path()
     args.laya_path = args.laya_path or default_laya_path()
-    if not args.model_dir:
+    if not args.checkpoint_dir:
         shipped = Path("models/qwenjev-multitask-v2/readout.pt")
         if shipped.is_file():
-            args.model_dir = str(shipped.parent)
-            print(f"no --model-dir given: using the shipped head at {args.model_dir}")
+            args.checkpoint_dir = str(shipped.parent)
+            print(f"no --checkpoint-dir given: using the shipped head at {args.checkpoint_dir}")
         else:
-            args.model_dir = ""
+            args.checkpoint_dir = ""
             if "qwen_trained" in args.variants:
                 args.variants = [v for v in args.variants if v != "qwen_trained"]
-                print("no --model-dir given and no shipped head on disk: scoring the untrained head only")
+                print("no --checkpoint-dir given and no shipped head on disk: scoring the untrained head only")
     progress = not args.quiet
 
     data_dir = Path(args.data_dir)
@@ -159,7 +160,7 @@ def main() -> int:
         return 2
     print(f"backbone       : {args.model}")
     print(f"data           : {data_dir}  ({len(tasks)} test splits)")
-    print(f"head           : {args.model_dir or '(none - untrained head only)'}")
+    print(f"checkpoint dir : {args.checkpoint_dir or '(none - untrained head only)'}")
     print(f"variants       : {', '.join(args.variants)}   items/task: {args.limit or 'all'}   batch: {args.batch}")
     variants = build_variants(args)
     if not variants:

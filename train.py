@@ -10,14 +10,14 @@ hyper-parameters - and every one of them has a default:
     python train.py \
       --model /path/to/qwen3.5-4B \
       --data-dir data/ready \
-      --model-dir models/my-run \
+      --checkpoint-dir models/my-run \
       --epochs 1 --lr 1e-3 --batch-size 8 \
       --items-per-label 12 --min-items-per-task 200 --prototype-init
 
 The data directory holds ``<task>_train.jsonl`` files (one JSON object per line, the
 engine's request shape plus ``targets``; see README, "Paths and data formats"). The output
-folder is created if needed and gets ``readout.pt`` + ``card.json``. ``--model-dir`` may
-be left empty, in which case a timestamped folder under ``models/`` is created.
+folder is created if needed and gets ``readout.pt`` + ``card.json``. ``--checkpoint-dir``
+may be left empty, in which case a timestamped folder under ``models/`` is created.
 """
 
 from __future__ import annotations
@@ -103,8 +103,9 @@ def assemble(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data-dir", default="data/ready", help="folder with <task>_train.jsonl")
-    parser.add_argument("--model-dir", default="",
+    parser.add_argument("--checkpoint-dir", dest="checkpoint_dir", default="",
                         help="where to write readout.pt + card.json; empty = models/qwenjev-run-<timestamp>")
+    parser.add_argument("--model-dir", dest="checkpoint_dir", help=argparse.SUPPRESS)  # old name
     parser.add_argument("--model", default=None,
                         help="backbone checkpoint or Hub repo id "
                              "(default: $QWENJEV_MODEL, else ./qwen3.5-4B)")
@@ -146,10 +147,10 @@ def main() -> int:
     parser.add_argument("--quiet", action="store_true", help="hide the progress bars")
     args = parser.parse_args()
     args.model = args.model or default_model_path()
-    if not args.model_dir:
+    if not args.checkpoint_dir:
         stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-        args.model_dir = str(Path("models") / f"qwenjev-run-{stamp}")
-        print(f"no --model-dir given: writing the decision head to {args.model_dir}")
+        args.checkpoint_dir = str(Path("models") / f"qwenjev-run-{stamp}")
+        print(f"no --checkpoint-dir given: writing the decision head to {args.checkpoint_dir}")
     progress = not args.quiet
 
     data_dir = Path(args.data_dir)
@@ -170,7 +171,7 @@ def main() -> int:
     print(f"training tasks ({len(tasks)}): {', '.join(tasks)}")
     print(f"backbone       : {args.model}")
     print(f"data           : {data_dir}")
-    print(f"head goes to   : {args.model_dir}")
+    print(f"checkpoint dir : {args.checkpoint_dir}")
     print(f"hyper-params   : epochs={args.epochs} lr={args.lr} batch={args.batch_size} "
           f"objective={args.objective} optimizer={args.optimizer} anchor={args.anchor}")
 
@@ -265,12 +266,12 @@ def main() -> int:
         print(f"prototype rows : {written} answers initialised from their mean state")
     report = tuner.train(samples, epochs=args.epochs, progress=progress)
 
-    model_dir = Path(args.model_dir)
+    model_dir = Path(args.checkpoint_dir)
     model_dir.mkdir(parents=True, exist_ok=True)
     checkpoint = model_dir / "readout.pt"
     tuner.save(str(checkpoint))
     card = {
-        "model_dir": str(model_dir),
+        "checkpoint_dir": str(model_dir),
         "backbone": args.model,
         "readout": "slot_head",
         "objective": args.objective,

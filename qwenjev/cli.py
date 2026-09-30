@@ -516,12 +516,12 @@ def _train_multitask(args) -> int:
     )
     report = tuner.train(samples, epochs=args.epochs)
 
-    model_dir = _Path(args.model_dir)
+    model_dir = _Path(args.checkpoint_dir)
     model_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_path = model_dir / "readout.pt"
     tuner.save(str(checkpoint_path))
     summary = {
-        "model_dir": str(model_dir),
+        "checkpoint_dir": str(model_dir),
         "tasks": per_task,
         "samples": len(samples),
         "steps": report.steps,
@@ -681,7 +681,8 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--train-data-root", default="data/ready")
     train.add_argument("--decisions-per-task", type=int, default=600, help="0 = no cap")
     train.add_argument("--max-train-samples", type=int, default=10000, help="0 = no cap after balancing")
-    train.add_argument("--model-dir", default="models/qwenjev-multitask-v2",
+    train.add_argument("--checkpoint-dir", "--model-dir", dest="checkpoint_dir",
+                       default="models/qwenjev-multitask-v2",
                        help="folder for readout.pt + card.json")
     train.add_argument("--question", default="queue", choices=["queue", "escalate"])
     train.add_argument("--train-size", type=int, default=1024)

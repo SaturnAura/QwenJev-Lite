@@ -1,7 +1,7 @@
 """User-facing web demo: a page with the three question types.
 
     python serve.py                 # http://127.0.0.1:8300
-    python serve.py --port 8301 --model-dir models/qwenjev-multitask-v2
+    python serve.py --port 8301 --checkpoint-dir models/qwenjev-multitask-v2
 
 The page has one tab per question type - 判断 (yes/no), 单选 (choice), 档位 (score).
 Everything is answered in a single forward pass per submission, and the result box shows
@@ -136,14 +136,15 @@ def main() -> int:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8300)
     parser.add_argument("--model", default=None, help="backbone path or Hub repo id (default $QWENJEV_MODEL)")
-    parser.add_argument("--model-dir", default="models/qwenjev-multitask-v2")
+    parser.add_argument("--checkpoint-dir", "--model-dir", dest="checkpoint_dir",
+                        default="models/qwenjev-multitask-v2")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--pretrained-readout", action="store_true",
                         help="use the readout the backbone came with instead of readout.pt")
     args = parser.parse_args()
     args.model = args.model or default_model_path()
 
-    checkpoint = Path(args.model_dir) / "readout.pt"
+    checkpoint = Path(args.checkpoint_dir) / "readout.pt"
     use_trained = checkpoint.is_file() and not args.pretrained_readout
     config = QwenJevConfig(
         model_path=args.model,
