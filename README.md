@@ -1,19 +1,5 @@
 <div align="center">
 
-# QwenJev-lite
-
-**A JEV-like model that uses RLCD on Qwen**
-
-![python](https://img.shields.io/badge/python-3.11-3776ab?logo=python&logoColor=white)
-![torch](https://img.shields.io/badge/torch-2.6.0%2Bcu126-ee4c2c?logo=pytorch&logoColor=white)
-![transformers](https://img.shields.io/badge/transformers-5.14-ffd21e)
-![tests](https://img.shields.io/badge/tests-92%20passing-2ea44f)
-![license](https://img.shields.io/badge/license-MIT-blue)
-
-[Results](#results) · [Quickstart](#quickstart) · [The shipped model](#the-shipped-model) · [Train and test](#train-and-test) · [Data](#data) · [Layout](#layout) · [How it works](#how-it-works) · [RLCD in brief](#rlcd-in-brief) · [vs. BERT](#compared-with-a-bert-base-classifier) · [Adaptations & data](#what-we-adapted-in-the-model-and-the-data) · [References](#references) · [TODO](#todo)
-
-</div>
-
 > Chinese version: [`README_CN.md`](README_CN.md).
 
 QwenJev-lite formulates a transformer as a **typed decision model**: the shared state is encoded once, each question becomes an isolated branch, and inference returns a probability distribution over the allowed answers rather than generated text. Questions are typed — a finite `choice`, a `bool`, or an ordered `score` — and one request may cover several types on the same state.
@@ -30,12 +16,12 @@ python demo.py --checkpoint-dir models/qwenjev-multitask-v2
 
 The full evaluation command is `python test.py --limit 0`, run over the 26 test splits (bool 7 + choice 12 + score 7) that both variants can answer. The values below are accuracy; raw data is in [`artifacts/results.json`](artifacts/results.json) and per-task detail in [`artifacts/RESULTS_CN.md`](artifacts/RESULTS_CN.md).
 
-| Question type / accuracy | Laya (reference) | Qwen baseline (`qwen_zeroshot`) | **our trained model** |
-| --- | --- | --- | --- |
-| judgement `bool` (7 tasks) | 0.520 | 0.717 | **0.793** |
-| choice `choice` (12 tasks) | 0.511 | 0.749 | **0.760** |
-| score `score` (7 tasks) | 0.258 | 0.681 | **0.771** |
-| **overall (26 tasks)** | **0.446** | 0.722 | **0.772** |
+| Question type / accuracy     | Laya (reference) | Qwen baseline (`qwen_zeroshot`) | **our trained model** |
+| ---------------------------- | ---------------- | --------------------------------- | --------------------------- |
+| judgement`bool` (7 tasks)  | 0.520            | 0.717                             | **0.793**             |
+| choice`choice` (12 tasks)  | 0.511            | 0.749                             | **0.760**             |
+| score`score` (7 tasks)     | 0.258            | 0.681                             | **0.771**             |
+| **overall (26 tasks)** | **0.446**  | 0.722                             | **0.772**             |
 
 The **Laya** column is a comparable third-party open baseline, measured on the same 26 test splits and listed here only for reference. This repository neither installs nor requires it — `test.py` scores the project's own two variants by default, while `--variants laya` remains available to anyone who already holds that checkpoint.
 
@@ -51,12 +37,12 @@ python serve.py                                              # the same thing as
 pytest -q                                                    # 92 tests on a tiny backbone, CPU only
 ```
 
-| Goal | Command |
-| --- | --- |
-| Run the full benchmark (Qwen baseline + our model, progress bars) | `python test.py --limit 0` |
-| Train a decision head (four inputs, all defaulted) | `python train.py --model /path/to/qwen3.5-4B` |
-| Rebuild the shipped decision head from its three sources | [`models/README.md`](models/README.md#rebuild-the-shipped-head) |
-| Convert raw sources into the canonical format | `python -m qwenjev.cli normalize --src data/raw --out data/ready` |
+| Goal                                                              | Command                                                             |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Run the full benchmark (Qwen baseline + our model, progress bars) | `python test.py --limit 0`                                        |
+| Train a decision head (four inputs, all defaulted)                | `python train.py --model /path/to/qwen3.5-4B`                     |
+| Rebuild the shipped decision head from its three sources          | [`models/README.md`](models/README.md#rebuild-the-shipped-head)    |
+| Convert raw sources into the canonical format                     | `python -m qwenjev.cli normalize --src data/raw --out data/ready` |
 
 ## The shipped model
 
@@ -66,12 +52,12 @@ pytest -q                                                    # 92 tests on a tin
 
 A run needs **four inputs**, and each of them has a default:
 
-| input | flag | default | notes |
-| --- | --- | --- | --- |
-| base model | `--model` | `$QWENJEV_MODEL`, else `./qwen3.5-4B` | a local path or a Hub repo id; the engine only reads hidden states, so another causal backbone — or a multimodal one, with the image/audio tokens placed inside `state` — works the same way |
-| where to save / load the head | `--checkpoint-dir` | *empty* → `models/qwenjev-run-<timestamp>` | created if missing; `train.py` writes `readout.pt` + `card.json` there, `test.py` reads `readout.pt` from there |
-| data | `--data-dir` | `data/ready` | a folder of `<task>_train.jsonl` / `<task>_test.jsonl` (any `<task>_<split>.jsonl` works) |
-| hyper-parameters | `--epochs`, `--lr`, `--batch-size`, `--objective`, `--items-per-label`, `--min-items-per-task`, `--prototype-init`, `--optimizer`, … | see `python train.py --help` | `--limit`, `--batch` and `--variants` for `test.py` |
+| input                         | flag                                                                                                                                                  | default                                         | notes                                                                                                                                                                                           |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| base model                    | `--model`                                                                                                                                           | `$QWENJEV_MODEL`, else `./qwen3.5-4B`       | a local path or a Hub repo id; the engine only reads hidden states, so another causal backbone — or a multimodal one, with the image/audio tokens placed inside`state` — works the same way |
+| where to save / load the head | `--checkpoint-dir`                                                                                                                                  | *empty* → `models/qwenjev-run-<timestamp>` | created if missing;`train.py` writes `readout.pt` + `card.json` there, `test.py` reads `readout.pt` from there                                                                        |
+| data                          | `--data-dir`                                                                                                                                        | `data/ready`                                  | a folder of`<task>_train.jsonl` / `<task>_test.jsonl` (any `<task>_<split>.jsonl` works)                                                                                                  |
+| hyper-parameters              | `--epochs`, `--lr`, `--batch-size`, `--objective`, `--items-per-label`, `--min-items-per-task`, `--prototype-init`, `--optimizer`, … | see`python train.py --help`                   | `--limit`, `--batch` and `--variants` for `test.py`                                                                                                                                     |
 
 For `test.py`, an empty `--checkpoint-dir` means **use the shipped head**; if that head is not on disk, the run falls back to scoring the Qwen baseline only rather than failing. Results are written to `--out` / `--markdown` (parent folders are created), defaulting to `artifacts/results.json` and `artifacts/RESULTS.md`.
 
@@ -147,14 +133,14 @@ print(engine.decide("My payouts have failed three times.", {
 
 `data/ready/` ships with the repository (≈97 MB of JSONL): the formatted train/test sets together with `manifest.json`, which records the source file, row counts and caveats of every split. The sources used are:
 
-| source | which tasks |
-| --- | --- |
-| MultiNLI / SNLI | `mnli`, `mnli_ood`, `snli` (one premise with several hypotheses) |
-| Jigsaw Toxic Comment | `jigsaw` (six independent yes/no labels), `jigsaw_severity` (ordered) |
-| GoEmotions | `goemotions` (28 yes/no emotions), `goemotions_sentiment` (ordered) |
-| TruthfulQA | `truthfulqa` (5-way) |
-| IntentGrasp | `intentgrasp` (the options ship with each item) |
-| CLINC150 / HWU64 | `clinc150`, `clinc150_top15`, `hwu64`, `hwu64_top15` |
+| source                                                     | which tasks                                                                                                                                                                  |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MultiNLI / SNLI                                            | `mnli`, `mnli_ood`, `snli` (one premise with several hypotheses)                                                                                                       |
+| Jigsaw Toxic Comment                                       | `jigsaw` (six independent yes/no labels), `jigsaw_severity` (ordered)                                                                                                    |
+| GoEmotions                                                 | `goemotions` (28 yes/no emotions), `goemotions_sentiment` (ordered)                                                                                                      |
+| TruthfulQA                                                 | `truthfulqa` (5-way)                                                                                                                                                       |
+| IntentGrasp                                                | `intentgrasp` (the options ship with each item)                                                                                                                            |
+| CLINC150 / HWU64                                           | `clinc150`, `clinc150_top15`, `hwu64`, `hwu64_top15`                                                                                                                 |
 | BEIR (arguana / nfcorpus / scidocs / scifact / trec-covid) | 15 relevance-judgement tasks built from each collection's queries and qrels: the labelled document becomes the positive option, non-qrels the negatives; splits are by query |
 
 `artifacts/extra_splits.json` records the training splits this repository builds itself (source, row counts, and the check that every answer the test file reads is trained), and `data/ready/manifest.json` records the provenance of every other split. The authors and maintainers of these datasets, annotations and tools made this work possible, and are gratefully acknowledged; full sources are listed under [References](#references).
@@ -232,16 +218,16 @@ That is, each sample pushes the row of the answer that occurred upward and pushe
 
 The usual way to use a transformer as a classifier is "BERT-base + one linear head"; the differences that matter are the following:
 
-| | BERT-base + one linear head | **QwenJev-lite** |
-| --- | --- | --- |
-| backbone | encoder, ~110M parameters, 12 layers | causal transformer, 4.54B, 32 layers (24 linear-attention + 8 full-attention) |
-| questions per forward pass | one — the pooled `[CLS]` state feeds a single head | many — the state is encoded once and each question is an isolated branch, completed in one batch |
-| where the answer comes from | a head whose **class count is fixed when it is built** | the state at the branch's decision position plus **K rows, one per allowed answer, with K free to vary per request** |
-| adding an answer set | a new head, a retrain, and one checkpoint per task | the **same head covers any label space**: reserved rows give zero-shot ability, private rows cover trained ones |
-| mixing question types | one classifier per type, one pass per question | one request may pose `choice` + `bool` + `score` about the same state |
-| uncertainty | a softmax that is typically over-confident and **never evaluated** | the distribution **itself is the trained object**, evaluated with ECE / Brier / NLL |
-| cost profile | low cost per pass, but **one question per pass** | one prefill per state (4.54B), then ≈20 ms per extra question on that state |
-| generation | none (classification only) | none, by design — **the decision head replaces the decode loop** |
+|                             | BERT-base + one linear head                                             | **QwenJev-lite**                                                                                                    |
+| --------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| backbone                    | encoder, ~110M parameters, 12 layers                                    | causal transformer, 4.54B, 32 layers (24 linear-attention + 8 full-attention)                                             |
+| questions per forward pass  | one — the pooled`[CLS]` state feeds a single head                    | many — the state is encoded once and each question is an isolated branch, completed in one batch                         |
+| where the answer comes from | a head whose**class count is fixed when it is built**             | the state at the branch's decision position plus**K rows, one per allowed answer, with K free to vary per request** |
+| adding an answer set        | a new head, a retrain, and one checkpoint per task                      | the**same head covers any label space**: reserved rows give zero-shot ability, private rows cover trained ones      |
+| mixing question types       | one classifier per type, one pass per question                          | one request may pose`choice` + `bool` + `score` about the same state                                                |
+| uncertainty                 | a softmax that is typically over-confident and**never evaluated** | the distribution**itself is the trained object**, evaluated with ECE / Brier / NLL                                  |
+| cost profile                | low cost per pass, but**one question per pass**                   | one prefill per state (4.54B), then ≈20 ms per extra question on that state                                              |
+| generation                  | none (classification only)                                              | none, by design —**the decision head replaces the decode loop**                                                    |
 
 In short: a BERT classifier answers "which of my N classes does this belong to", with a head that must exist before training; QwenJev-lite answers "which of these K answers is it", where the answer set is part of the request, multiple questions on one state stay isolated, and the output is a **calibrated distribution** rather than a single argmax.
 
@@ -269,6 +255,7 @@ The model, data and methods of this project build on prior work; the resources u
 - FEVER: [fever.ai](https://fever.ai/).
 - Jigsaw Toxic Comment Classification: [github.com/praj2408/Jigsaw-Toxic-Comment-classification](https://github.com/praj2408/Jigsaw-Toxic-Comment-classification).
 - GoEmotions: [kaggle.com/datasets/debarshichanda/goemotions](https://www.kaggle.com/datasets/debarshichanda/goemotions).
+- IntentGrasp: [huggingface.co/datasets/yuweiyin/IntentGrasp](https://huggingface.co/datasets/yuweiyin/IntentGrasp).
 
 **Prior work and inspiration**
 

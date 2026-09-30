@@ -15,11 +15,11 @@ python demo.py --checkpoint-dir models/qwenjev-multitask-v2
 完整评测命令为 `python test.py --limit 0`，在 26 个两个变体均可作答的测试集上进行（bool 7 + choice 12 + score 7）。表中数值为准确率；原始数据见 [`artifacts/results.json`](artifacts/results.json)，逐任务明细见 [`artifacts/RESULTS_CN.md`](artifacts/RESULTS_CN.md)。
 
 | 题型/准确率             | Laya（参照）    | Qwen 基线（`qwen_zeroshot`） | **我们训练后的模型** |
-| ----------------------- | --------------- | ------------------------------- | -------------------------- |
-| 判断`bool`（7 项）    | 0.520           | 0.717                           | **0.793**            |
-| 单选`choice`（12 项） | 0.511           | 0.749                           | **0.760**            |
-| 打分`score`（7 项）   | 0.258           | 0.681                           | **0.771**            |
-| **总体（26 项）** | **0.446** | 0.722                           | **0.772**            |
+| ----------------------- | --------------- | ------------------------------ | -------------------------- |
+| 判断`bool`（7 项）    | 0.520           | 0.717                          | **0.793**            |
+| 单选`choice`（12 项） | 0.511           | 0.749                          | **0.760**            |
+| 打分`score`（7 项）   | 0.258           | 0.681                          | **0.771**            |
+| **总体（26 项）** | **0.446** | 0.722                          | **0.772**            |
 
 **Laya** 一列为同类的第三方开放基线，在相同的 26 个测试集上测得，此处列出仅为提供参照。本仓库不安装、也不要求运行该基线 —— `test.py` 默认仅评测本项目自身的两个变体；如已持有对应 checkpoint，`--variants laya` 仍然可用。
 
@@ -35,12 +35,12 @@ python serve.py                                              # 同一功能的�
 pytest -q                                                    # 92 个测试，微型骨架，纯 CPU
 ```
 
-| 目标                                              | 命令                                                                |
-| ------------------------------------------------- | ------------------------------------------------------------------- |
+| 目标                                             | 命令                                                                |
+| ------------------------------------------------ | ------------------------------------------------------------------- |
 | 运行全量基准（Qwen 基线 + 我们的模型，带进度条） | `python test.py --limit 0`                                        |
-| 训练决策头（四类输入，均有默认值）                | `python train.py --model /path/to/qwen3.5-4B`                     |
-| 由三个源文件重建交付的决策头                      | [`models/README.md`](models/README.md#rebuild-the-shipped-head)    |
-| 将原始数据转换为统一格式                          | `python -m qwenjev.cli normalize --src data/raw --out data/ready` |
+| 训练决策头（四类输入，均有默认值）               | `python train.py --model /path/to/qwen3.5-4B`                     |
+| 由三个源文件重建交付的决策头                     | [`models/README.md`](models/README.md#rebuild-the-shipped-head)    |
+| 将原始数据转换为统一格式                         | `python -m qwenjev.cli normalize --src data/raw --out data/ready` |
 
 ## 交付模型
 
@@ -252,6 +252,7 @@ Brier    :  L = Σ_k (p_k − 1{y = k})²
 - FEVER：[fever.ai](https://fever.ai/)。
 - Jigsaw Toxic Comment Classification：[github.com/praj2408/Jigsaw-Toxic-Comment-classification](https://github.com/praj2408/Jigsaw-Toxic-Comment-classification)。
 - GoEmotions：[kaggle.com/datasets/debarshichanda/goemotions](https://www.kaggle.com/datasets/debarshichanda/goemotions)。
+- IntentGrasp: [huggingface.co/datasets/yuweiyin/IntentGrasp](https://huggingface.co/datasets/yuweiyin/IntentGrasp)。
 
 **启发与参考**
 
