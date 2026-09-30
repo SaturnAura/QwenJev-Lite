@@ -19,7 +19,7 @@ from pathlib import Path
 
 from tqdm.auto import tqdm
 
-from qwenjev.config import QwenJevConfig
+from qwenjev.config import QwenJevConfig, default_model_path
 from qwenjev.datasets import items_to_samples
 from qwenjev.engine import QwenJevLite
 from qwenjev.normalize import load_normalized
@@ -92,7 +92,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data-dir", default="data/ready", help="folder with <task>_train.jsonl")
     parser.add_argument("--model-dir", default="models/qwenjev-multitask-v2")
-    parser.add_argument("--model", default=r"C:\qwen3.5-4B", help="backbone checkpoint")
+    parser.add_argument("--model", default=None,
+                        help="backbone checkpoint or Hub repo id "
+                             "(default: $QWENJEV_MODEL, else ./qwen3.5-4B)")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--tasks", nargs="*", default=None, help="only these tasks")
     parser.add_argument("--exclude", nargs="*", default=list(DEFAULT_EXCLUDE),
@@ -130,6 +132,7 @@ def main() -> int:
     parser.add_argument("--report", default="artifacts/train_multitask_v2.json")
     parser.add_argument("--quiet", action="store_true", help="hide the progress bars")
     args = parser.parse_args()
+    args.model = args.model or default_model_path()
     progress = not args.quiet
 
     data_dir = Path(args.data_dir)

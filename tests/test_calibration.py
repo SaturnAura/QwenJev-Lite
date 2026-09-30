@@ -51,7 +51,7 @@ def test_wilson_interval_brackets_the_estimate():
     assert wilson_interval(0, 0)[0] != wilson_interval(0, 0)[1]
 
 
-def test_summary_reports_the_fields_the_essay_uses():
+def test_summary_reports_the_expected_fields():
     summary = summarise_reliability([0.9, 0.2, 0.8], [True, False, True])
     assert set(summary) >= {"n", "accuracy", "mean_top_probability", "ece", "wilson95", "bins"}
 

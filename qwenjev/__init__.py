@@ -1,16 +1,16 @@
-"""QwenJev-lite: a Jev-style decision model built on a Qwen3.5-4B backbone.
+"""QwenJev-lite: a typed decision model on a transformer backbone.
 
-The design reproduces the architecture reconstructed in *Jev's Architecture Unmasked*
-(archerhume, 2026-09-17):
+The design has six parts:
 
 1. end inference with a readout instead of an autoregressive decode loop;
 2. encode the shared state once and isolate the question branches;
-3. keep a causal transformer backbone;
+3. keep a causal transformer backbone (any backbone works: the engine only reads
+   hidden states, so a multimodal encoder is usable the same way);
 4. read the option list jointly (listwise) before choosing;
 5. train the predictive distribution (RLCD), then compute confidence arithmetically;
 6. schedule the branches as a batch, not as a conversation.
 
-See README.md for the mapping between the essay's sections and this package.
+See README.md for how the pieces fit together.
 """
 
 from .config import JevLimits, QwenJevConfig

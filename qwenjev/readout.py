@@ -1,6 +1,6 @@
 """Probability readouts: the part of the graph that replaces text generation.
 
-The essay describes the readout as ``z = W h + b`` followed by a softmax over the
+The readout is ``z = W h + b`` followed by a softmax over the
 ``K`` allowed answers, and notes that the rows of ``W`` may be reserved rows of the
 language-model head rather than a separately trained classifier. Both arrangements
 are implemented here:
@@ -13,7 +13,7 @@ are implemented here:
   so a trained task only moves the rows of its own answers and the reserved letter
   rows stay untouched as the fallback for answers the head never met;
 * :class:`PointerReadout` scores each option's own final hidden state against the
-  decision position ("pointer-style scorer", essay section 4).
+  decision position (a listwise scorer).
 
 Every readout returns a ``(B, K_max)`` tensor of log-probabilities; rows with fewer
 options are padded with ``-inf``.
@@ -127,7 +127,7 @@ class ReservedLabelReadout(Readout):
 
 
 class SlotHeadReadout(Readout):
-    """Dedicated ``K``-slot head: ``z_k = w_k . h + b_k`` (essay section 1).
+    """Dedicated ``K``-slot head: ``z_k = w_k . h + b_k``.
 
     Rows ``0 .. SLOT_RESERVE-1`` are the pretrained label rows (plus one neutral row).
     Every answer that was seen during training gets its own row past that reserve

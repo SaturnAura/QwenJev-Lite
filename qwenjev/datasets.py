@@ -894,7 +894,7 @@ DATASETS: dict[str, DatasetSpec] = {
         readout="reserved_label (4-10 options)",
         loader=load_mmlu,
         hint=MMLU_HINT,
-        note="Same reliability analysis as the essay's Figure 5.",
+        note="Per-question reliability, the same analysis as every other task.",
         hf_ids=("cais/mmlu", "TIGER-Lab/MMLU-Pro"),
     ),
     "clinc150": DatasetSpec(

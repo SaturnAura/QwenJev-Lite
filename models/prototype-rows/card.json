@@ -1,6 +1,5 @@
 {
-  "model_dir": "models\\_p4",
-  "backbone": "C:\\qwen3.5-4B",
+  "backbone": "qwen3.5-4B (any local path or Hub repo id; see --model / QWENJEV_MODEL)",
   "readout": "slot_head",
   "objective": "log_loss",
   "balance": "none",

@@ -10,7 +10,7 @@
     }
 
 The response carries one distribution per question, the adapter's confidence field,
-the billing figure and the timing split, so the essay's observations can be checked
+the billing figure and the timing split, so the documented behaviour can be checked
 against a running service rather than a notebook.
 """
 

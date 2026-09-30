@@ -1,11 +1,21 @@
-"""The essay's experiments, re-run against this implementation.
+"""The architecture probes, run against this implementation.
 
 Each probe returns a :class:`ProbeResult` with the raw per-request rows and a small
-summary. They are deliberately written the way the essay describes them, so the
+summary. They are written to measure the documented behaviours, so the
 numbers here can be read side by side with the published tables:
 
 ======================  ==================================================
-probe                   essay section / figure
+probe                   what it measures
+======================  ==================================================
+``visibility``          does a sibling branch leak into this one?
+``reference_card``      option-position sensitivity
+``option_interaction``  does an irrelevant option change the odds?
+``option_order``        does reversing the options move the probability?
+``accounting``          token accounting and the billing figure
+``latency``             wall-clock time as the request grows
+``fake_option``         do injected options displace the real ones?
+======================  ==================================================
+probe                   what it measures
 ======================  ==================================================
 ``visibility``          2, the sibling-secret intervention
 ``reference_card``      3, option-position sensitivity
@@ -483,7 +493,7 @@ def latency(
                 }
             )
 
-    # The essay's core claim: the same work as Q separate requests, with the state
+    # The core claim: the same work as Q separate requests, with the state
     # encoded once instead of Q times.
     for count in separate_counts:
         questions = {f"q{i}": bool_question for i in range(count)}

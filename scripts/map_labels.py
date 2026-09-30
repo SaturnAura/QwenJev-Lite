@@ -32,6 +32,8 @@ from transformers import AutoModelForImageTextToText, AutoTokenizer
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from qwenjev.config import default_model_path  # noqa: E402
+
 
 @torch.no_grad()
 def embed(model, tokenizer, texts, *, batch_size: int = 16, max_length: int = 128, device: str = "cuda:0"):
@@ -56,12 +58,13 @@ def main() -> int:
     parser.add_argument("--examples", required=True, help="TSV/CSV with text and label name")
     parser.add_argument("--parquet", required=True, help="dataset whose integer labels to name")
     parser.add_argument("--out", required=True)
-    parser.add_argument("--model", default=r"C:\qwen3.5-4B")
+    parser.add_argument("--model", default=None, help="backbone path (default $QWENJEV_MODEL)")
     parser.add_argument("--text-column", default=None)
     parser.add_argument("--label-column", default=None)
     parser.add_argument("--max-examples", type=int, default=4000)
     parser.add_argument("--device", default="cuda:0")
     args = parser.parse_args()
+    args.model = args.model or default_model_path()
 
     import pandas as pd
 

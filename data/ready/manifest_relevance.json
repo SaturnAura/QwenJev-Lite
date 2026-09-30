@@ -1,12 +1,12 @@
 {
   "generated_at": "2026-09-29T11:15:18+00:00",
-  "source_root": "D:\\AutoBM25\\dataset_en",
+  "source_root": "<collection root>",
   "out_dir": "data\\ready",
   "queries_per_task": 60,
   "tasks": {
     "arguana": {
       "title": "relevance judgement: arguana",
-      "source": "D:\\AutoBM25\\dataset_en\\arguana",
+      "source": "<collection root>\\arguana",
       "eval_split": "test",
       "train_split": "test",
       "splits": {
@@ -79,7 +79,7 @@
     },
     "scifact": {
       "title": "relevance judgement: scifact",
-      "source": "D:\\AutoBM25\\dataset_en\\scifact",
+      "source": "<collection root>\\scifact",
       "eval_split": "test",
       "train_split": "train",
       "splits": {
@@ -156,7 +156,7 @@
     },
     "nfcorpus": {
       "title": "relevance judgement: nfcorpus",
-      "source": "D:\\AutoBM25\\dataset_en\\nfcorpus",
+      "source": "<collection root>\\nfcorpus",
       "eval_split": "test",
       "train_split": "train",
       "splits": {
@@ -233,7 +233,7 @@
     },
     "scidocs": {
       "title": "relevance judgement: scidocs",
-      "source": "D:\\AutoBM25\\dataset_en\\scidocs",
+      "source": "<collection root>\\scidocs",
       "eval_split": "test",
       "train_split": "test",
       "splits": {
@@ -310,7 +310,7 @@
     },
     "trec-covid": {
       "title": "relevance judgement: trec-covid",
-      "source": "D:\\AutoBM25\\dataset_en\\trec-covid",
+      "source": "<collection root>\\trec-covid",
       "eval_split": "test",
       "train_split": "test",
       "splits": {

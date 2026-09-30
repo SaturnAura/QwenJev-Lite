@@ -1,6 +1,6 @@
 """User-facing demo: typed decisions over any text, in one forward pass.
 
-    python demo.py                                   # the essay's opening example
+    python demo.py                                   # the reference example
     python demo.py --state "My card was declined twice." \
         --claim "This needs urgent attention" \
         --choice "Which team?"=payments=Payouts,account=Login,other=Else \
@@ -19,6 +19,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+
+from qwenjev.config import QwenJevConfig, default_model_path
 from pathlib import Path
 
 EXAMPLE_STATE = (
@@ -127,12 +129,13 @@ def main() -> int:
     parser.add_argument("--bool", nargs="*", default=[], help="yes/no questions")
     parser.add_argument("--choice", nargs="*", default=[], help='"instruction"=key=desc,key=desc')
     parser.add_argument("--score", nargs="*", default=[], help='"instruction"=level,level,level')
-    parser.add_argument("--model", default=r"C:\qwen3.5-4B")
+    parser.add_argument("--model", default=None, help="backbone path or Hub repo id (default $QWENJEV_MODEL)")
     parser.add_argument("--model-dir", default="models/qwenjev-multitask-v2",
                         help="folder with the trained readout.pt (omit to use the pretrained readout)")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--json", action="store_true", help="print the raw payload instead")
     args = parser.parse_args()
+    args.model = args.model or default_model_path()
 
     questions: dict = {}
     if args.bool:
@@ -153,7 +156,6 @@ def main() -> int:
     if not state:
         state = EXAMPLE_STATE
 
-    from qwenjev.config import QwenJevConfig
     from qwenjev.engine import QwenJevLite
 
     checkpoint = Path(args.model_dir) / "readout.pt" if args.model_dir else None

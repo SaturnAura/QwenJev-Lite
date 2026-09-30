@@ -28,7 +28,7 @@ from transformers import AutoModelForImageTextToText, AutoTokenizer
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from qwenjev.backends import QwenBackend  # noqa: E402
-from qwenjev.config import QwenJevConfig  # noqa: E402
+from qwenjev.config import QwenJevConfig, default_model_path  # noqa: E402
 from qwenjev.engine import QwenJevLite  # noqa: E402
 from qwenjev.evaluation import evaluate_items  # noqa: E402
 from qwenjev.normalize import load_normalized  # noqa: E402
@@ -53,7 +53,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--data-dir", default="data/ready")
-    parser.add_argument("--model", default=r"C:\qwen3.5-4B")
+    parser.add_argument("--model", default=None, help="backbone path (default $QWENJEV_MODEL)")
     parser.add_argument("--alphas", nargs="+", type=float, default=[0.0, 0.25, 0.5, 0.75, 1.0])
     parser.add_argument("--tasks", nargs="*", default=list(DEV_TASKS))
     parser.add_argument("--limit", type=int, default=40)
@@ -61,6 +61,7 @@ def main() -> int:
     parser.add_argument("--out", default=None, help="write the best alpha's head here")
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()
+    args.model = args.model or default_model_path()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     backbone = AutoModelForImageTextToText.from_pretrained(

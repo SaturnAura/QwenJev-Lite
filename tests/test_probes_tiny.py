@@ -2,7 +2,7 @@ from qwenjev.probes import ALL_PROBES, run_all
 from qwenjev.testing import build_tiny_engine
 
 
-def test_probe_names_cover_the_essay_sections():
+def test_probe_names_cover_the_documented_behaviours():
     assert set(ALL_PROBES) == {
         "visibility",
         "reference_card",

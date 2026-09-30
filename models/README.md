@@ -18,7 +18,7 @@ from qwenjev.config import QwenJevConfig
 from qwenjev.engine import QwenJevLite
 
 engine = QwenJevLite.from_pretrained(config=QwenJevConfig(
-    model_path=r"C:\qwen3.5-4B",
+    model_path="qwen3.5-4B",        # any local path or Hub repo id
     readout="slot_head",
     readout_checkpoint="models/qwenjev-multitask-v2/readout.pt",
 ))
@@ -46,6 +46,6 @@ python scripts/compose_wide_rows.py \
 
 The prototypes themselves are reproduced with
 `train.py --prototype-init --items-per-label 12 --min-items-per-task 200` (about 20
-minutes on a 3090); the shared rows in the same way with `train.py` and then one
-`interpolate.py` run. Why this shape, and what was tried before it, is in
-[`artifacts/REPORT_V8_CN.md`](../artifacts/REPORT_V8_CN.md).
+minutes on a 3090); the shared rows in the same way with `train.py`, then one
+`interpolate.py` run. The evaluation these files ship with is in
+[`artifacts/RESULTS_CN.md`](../artifacts/RESULTS_CN.md).

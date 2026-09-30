@@ -1,6 +1,6 @@
 """Print the per-task comparison table from one or more recorded result files.
 
-    python scripts/compare_results.py artifacts/dataset_results_v5.json
+    python scripts/compare_results.py artifacts/results.json
 
 Each argument is a JSON payload written by ``test.py`` or ``qwenjev benchmark``; the
 first one supplies the task list and the baselines, the rest are appended as extra

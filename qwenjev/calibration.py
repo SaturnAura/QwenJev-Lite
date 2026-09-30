@@ -1,9 +1,9 @@
-"""Reliability analysis, following the essay's methods section.
+"""Reliability analysis: reliability bins, ECE, Brier and Wilson intervals.
 
-"The MMLU calibration figure uses ten equal-width bins: [0, 0.1), [0.1, 0.2), and
-so on, with 1.0 included in the last bin. Expected calibration error is the
-sample-weighted absolute difference between accuracy and average top probability in
-each bin."  (:mod:`qwenjev.probes` and the CLI reuse these helpers.)
+Calibration error uses ten equal-width bins over the top probability
+(``[0, 0.1)``, ``[0.1, 0.2)``, ..., with ``1.0`` in the last bin) and is the
+sample-weighted absolute difference between accuracy and the average top probability
+inside each bin. :mod:`qwenjev.probes` and the CLI reuse these helpers.
 """
 
 from __future__ import annotations
@@ -82,11 +82,7 @@ def brier_score(probabilities, correct) -> float:
 
 
 def multiclass_brier(probability_rows, targets) -> float:
-    """Proper multiclass Brier score: squared distance to the one-hot outcome.
-
-    The essay's section 5: "Brier loss, the squared distance between the predicted
-    distribution and the observed one-hot outcome."
-    """
+    """Proper multiclass Brier score: squared distance to the one-hot outcome."""
 
     total = 0.0
     for row, target in zip(probability_rows, targets):
@@ -114,7 +110,7 @@ def negative_log_likelihood(probabilities, correct=None) -> float:
 
 
 def wilson_interval(successes: int, total: int, z: float = 1.96) -> tuple[float, float]:
-    """95% Wilson interval - the error bars used in the essay's figures."""
+    """95% Wilson interval - the error bars on a per-task accuracy."""
 
     if total <= 0:
         return (float("nan"), float("nan"))
@@ -183,7 +179,7 @@ class TemperatureScaler:
 
 
 def summarise_reliability(probabilities, correct, n_bins: int = 10) -> dict:
-    """Reliability of the *chosen* answer, following the essay's figure.
+    """Reliability of the *chosen* answer.
 
     ``probabilities`` is the probability the model gave the answer it returned;
     ``correct`` says whether that answer was right. Extra fields (NLL, multiclass

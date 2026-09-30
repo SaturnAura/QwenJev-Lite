@@ -1,4 +1,4 @@
-﻿"""Build the training splits the choice tasks were missing.
+"""Build the training splits the choice tasks were missing.
 
 The formatted mix in ``data/ready`` leaves several choice label spaces with *no*
 training data at all, or with almost none:

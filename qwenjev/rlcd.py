@@ -1,10 +1,8 @@
 """Reinforcement Learning for Calibrated Decisions, in its supervised form.
 
-"TypeSafe calls its training method Reinforcement Learning for Calibrated Decisions,
-or RLCD. ... My proposed training recipe adapts the transformer and readout to typed
-decision tasks using an outcome-based objective." Log loss and the Brier score are
-both proper scoring rules, so minimising either in expectation recovers the true
-conditional distribution (essay section 5).
+RLCD trains a typed decision model from outcomes: the readout is fitted with a proper
+scoring rule, so minimising it in expectation recovers the true conditional
+distribution. Log loss and the Brier score are both proper scoring rules.
 
 This module implements that objective on typed decisions. The backbone is frozen and
 the readout is trained; the same loss works with backbone gradients if the caller has
@@ -95,8 +93,7 @@ class TrainingReport:
 class Evaluation:
     """Per-item predictions, ready for the reliability helpers."""
 
-    #: probability the model gave the answer it returned (the essay's "probability
-    #: it gave its chosen answer")
+    #: probability the model gave the answer it returned
     top_probabilities: np.ndarray
     #: probability the model gave the outcome that actually happened
     true_probabilities: np.ndarray

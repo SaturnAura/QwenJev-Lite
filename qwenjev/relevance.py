@@ -17,7 +17,7 @@ every query into a small *relevance judgement* suite:
     ("how well does this passage satisfy the query?") over
     not relevant / relevant / highly relevant.
 
-    python -m qwenjev.cli relevance --src D:\\AutoBM25\\dataset_en \\
+    python -m qwenjev.cli relevance --src <collection root> \\
         --collections scifact nfcorpus trec-covid --queries 60
 """
 

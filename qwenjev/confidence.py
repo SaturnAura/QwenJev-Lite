@@ -1,12 +1,12 @@
 """Arithmetic summary fields, kept separate from the trained distribution.
 
-The essay (section 5) reports the official adapter's formula for ``Choice``::
+The ``Choice`` confidence field is arithmetic, not learned::
 
     c = (pmax - 1/K) / (1 - 1/K)
 
 "For three options with a maximum probability of 0.8, this gives 0.7. The adapter
 handles the one-option case separately, returning 1." The ``Score`` type "uses a
-different formula reflecting distance from the modal level"; the essay does not
+different formula reflecting distance from the modal level"; it is not
 publish it, so :func:`score_confidence` is our reconstruction and is labelled as
 such.
 """

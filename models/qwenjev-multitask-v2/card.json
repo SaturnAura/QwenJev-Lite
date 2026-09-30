@@ -10,61 +10,74 @@
     "prototype_rows": "models/prototype-rows/readout.pt",
     "data_dir": "data/ready"
   },
-  "benchmark_v9": {
+  "backbone": "qwen3.5-4B (any local path or Hub repo id; see --model / QWENJEV_MODEL)",
+  "benchmark": {
+    "note": "26 test splits every variant can answer; details in artifacts/RESULTS_CN.md",
     "laya": {
       "bool": {
         "accuracy": 0.5204,
+        "ece": 0.3395,
         "n_tasks": 7
       },
       "choice": {
-        "accuracy": 0.5015,
-        "n_tasks": 14
+        "accuracy": 0.511,
+        "ece": 0.1839,
+        "n_tasks": 12
       },
       "score": {
         "accuracy": 0.2584,
+        "ece": 0.4183,
         "n_tasks": 7
       },
       "overall": {
         "accuracy": 0.4455,
-        "n_tasks": 28
+        "ece": 0.2889,
+        "n_tasks": 26
       }
     },
     "qwen_zeroshot": {
       "bool": {
         "accuracy": 0.7169,
+        "ece": 0.1838,
         "n_tasks": 7
       },
       "choice": {
         "accuracy": 0.7486,
+        "ece": 0.1542,
         "n_tasks": 12
       },
       "score": {
         "accuracy": 0.6809,
+        "ece": 0.1377,
         "n_tasks": 7
       },
       "overall": {
         "accuracy": 0.7218,
+        "ece": 0.1577,
         "n_tasks": 26
       }
     },
     "qwen_trained": {
       "bool": {
         "accuracy": 0.7935,
+        "ece": 0.1094,
         "n_tasks": 7
       },
       "choice": {
-        "accuracy": 0.7276,
-        "n_tasks": 14
+        "accuracy": 0.7599,
+        "ece": 0.1344,
+        "n_tasks": 12
       },
       "score": {
         "accuracy": 0.771,
+        "ece": 0.1241,
         "n_tasks": 7
       },
       "overall": {
-        "accuracy": 0.7549,
-        "n_tasks": 28
+        "accuracy": 0.7719,
+        "ece": 0.1249,
+        "n_tasks": 26
       }
     }
-  },
-  "report": "artifacts/REPORT_V9_CN.md"
+  }
 }

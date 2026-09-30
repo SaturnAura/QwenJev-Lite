@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import copy
 import time
+import sys
 from collections import OrderedDict
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 import torch
@@ -155,6 +157,15 @@ class QwenJevLite:
         config = config or QwenJevConfig(**kwargs)
         if model_path is not None:
             config.model_path = model_path
+        if not Path(config.model_path).exists() and not Path(config.model_path).is_absolute():
+            # A relative path that is not there is the usual first-run mistake; say what
+            # to do instead of letting the Hub error out.
+            print(
+                f"note: backbone {config.model_path!r} is not on disk; pass --model <path>, "
+                f"put the checkpoint there, or set QWENJEV_MODEL. Anything transformers can "
+                f"load works (a local path or a Hub repo id).",
+                file=sys.stderr,
+            )
         tokenizer = AutoTokenizer.from_pretrained(config.model_path)
         model = AutoModelForImageTextToText.from_pretrained(
             config.model_path,
@@ -188,7 +199,7 @@ class QwenJevLite:
 
     # -- branch execution ------------------------------------------------------
     def _chunk_branches(self, branches: Sequence[TokenizedBranch]):
-        """Pack the independent branches into batches (essay section 7).
+        """Pack the independent branches into batches.
 
         Two limits: the configured batch size, and a token budget so that long
         branches cannot blow up the padding of a large batch.

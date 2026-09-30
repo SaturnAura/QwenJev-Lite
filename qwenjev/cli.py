@@ -630,17 +630,18 @@ def cmd_reproduce(args) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    from .config import DEFAULT_MODEL_PATH
+    from .config import default_model_path
 
     parser = argparse.ArgumentParser(prog="qwenjev", description="QwenJev-lite")
-    parser.add_argument("--model", default=DEFAULT_MODEL_PATH)
+    parser.add_argument("--model", default=None,
+                        help="backbone path or Hub repo id (default: $QWENJEV_MODEL, else ./qwen3.5-4B)")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--readout", default="reserved_label", choices=["reserved_label", "slot_head", "pointer"])
     parser.add_argument("--fake", action="store_true", help="use the tiny random backbone")
     parser.add_argument("--branch-batch-size", type=int, default=64)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    demo = sub.add_parser("demo", help="run the essay's opening example")
+    demo = sub.add_parser("demo", help="run the reference example")
     demo.add_argument("--state", default=None)
     demo.add_argument("--questions", default=None, help="JSON questions object")
     demo.set_defaults(func=cmd_demo)
@@ -650,7 +651,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--port", type=int, default=8300)
     serve.set_defaults(func=cmd_serve)
 
-    probe = sub.add_parser("probe", help="run the essay's experiments")
+    probe = sub.add_parser("probe", help="run the architecture probes")
     probe.add_argument("probe", nargs="?", default="all")
     probe.add_argument("--quick", action="store_true")
     probe.add_argument("--out", default=None)
@@ -784,6 +785,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if getattr(args, "model", None) is None:
+        from .config import default_model_path
+
+        args.model = default_model_path()
     return args.func(args)
 
 

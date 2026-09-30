@@ -19,7 +19,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
 from qwenjev.api import create_app
-from qwenjev.config import QwenJevConfig
+from qwenjev.config import QwenJevConfig, default_model_path
 
 PAGE = """<!doctype html>
 <html lang="zh"><head><meta charset="utf-8"><title>QwenJev-lite 决策台</title>
@@ -135,12 +135,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8300)
-    parser.add_argument("--model", default=r"C:\qwen3.5-4B")
+    parser.add_argument("--model", default=None, help="backbone path or Hub repo id (default $QWENJEV_MODEL)")
     parser.add_argument("--model-dir", default="models/qwenjev-multitask-v2")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--pretrained-readout", action="store_true",
                         help="use the readout the backbone came with instead of readout.pt")
     args = parser.parse_args()
+    args.model = args.model or default_model_path()
 
     checkpoint = Path(args.model_dir) / "readout.pt"
     use_trained = checkpoint.is_file() and not args.pretrained_readout

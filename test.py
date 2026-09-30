@@ -18,6 +18,7 @@ from pathlib import Path
 from tqdm.auto import tqdm
 
 from qwenjev.benchmark import task_baseline
+from qwenjev.config import default_laya_path, default_model_path
 from qwenjev.evaluation import evaluate_items
 from qwenjev.normalize import load_normalized
 
@@ -98,8 +99,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data-dir", default="data/ready")
     parser.add_argument("--model-dir", default="models/qwenjev-multitask-v2")
-    parser.add_argument("--model", default=r"C:\qwen3.5-4B")
-    parser.add_argument("--laya-path", default=r"C:\laya")
+    parser.add_argument("--model", default=None, help="backbone path or Hub repo id (default $QWENJEV_MODEL)")
+    parser.add_argument("--laya-path", default=None, help="Laya checkpoint (default $QWENJEV_LAYA, else ./laya)")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--variants", nargs="+", default=["laya", "qwen_zeroshot", "qwen_trained"],
                         choices=["laya", "qwen_zeroshot", "qwen_trained"])
@@ -107,10 +108,12 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=40, help="items per task (0 = all)")
     parser.add_argument("--batch", type=int, default=16,
                         help="requests per forward pass for the QwenJev variants (1 = one at a time)")
-    parser.add_argument("--out", default="artifacts/dataset_results_v2.json")
-    parser.add_argument("--markdown", default="artifacts/DATASETS_V2.md")
+    parser.add_argument("--out", default="artifacts/results.json")
+    parser.add_argument("--markdown", default="artifacts/RESULTS.md")
     parser.add_argument("--quiet", action="store_true", help="hide the progress bars")
     args = parser.parse_args()
+    args.model = args.model or default_model_path()
+    args.laya_path = args.laya_path or default_laya_path()
     progress = not args.quiet
 
     data_dir = Path(args.data_dir)

@@ -156,7 +156,7 @@ def render_report(
         )
         parts.append("")
     if demo is not None:
-        parts += ["## The essay's opening example", "", "```json", _pretty(demo), "```", ""]
+        parts += ["## The reference example", "", "```json", _pretty(demo), "```", ""]
     if probes:
         parts += ["## Probes", ""]
         for result in probes:

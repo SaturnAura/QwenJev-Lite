@@ -1,4 +1,4 @@
-"""Evaluate a decision model over a whole dataset of Jev-shaped requests."""
+"""Evaluate a decision model over a whole dataset of decision requests."""
 
 from __future__ import annotations
 

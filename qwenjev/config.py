@@ -1,20 +1,38 @@
-"""Limits and defaults observed in the essay.
+"""Request limits and defaults.
 
-The numbers below are the ones the essay recovered from the Jev API surface. They are
-part of the reproduction: validation, token accounting and cache sizing all use them.
+Validation, token accounting and cache sizing all use these numbers.
 """
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 
-# Default local backbone (Qwen3.5-4B, hybrid linear/full attention, 32 layers).
-DEFAULT_MODEL_PATH = r"C:\qwen3.5-4B"
+#: Backbone checkpoint. Nothing in this project depends on which one it is: the engine
+#: only asks for hidden states, so any causal (or multimodal) transformer works. The
+#: default is a *relative* directory next to the checkout - put the model there, pass
+#: ``--model``, or set ``QWENJEV_MODEL`` to an absolute path or a Hub repo id.
+DEFAULT_MODEL_PATH = "qwen3.5-4B"
+
+#: The Laya baseline (an external model used for comparison) resolves the same way.
+DEFAULT_LAYA_PATH = "laya"
+
+
+def default_model_path() -> str:
+    """``$QWENJEV_MODEL`` if set, else the sibling directory ``qwen3.5-4B``."""
+
+    return os.environ.get("QWENJEV_MODEL") or DEFAULT_MODEL_PATH
+
+
+def default_laya_path() -> str:
+    """``$QWENJEV_LAYA`` (or ``$LAYA_PATH``) if set, else the sibling directory ``laya``."""
+
+    return os.environ.get("QWENJEV_LAYA") or os.environ.get("LAYA_PATH") or DEFAULT_LAYA_PATH
 
 
 @dataclass(frozen=True)
 class JevLimits:
-    """Hard limits the API enforces (essay section 2)."""
+    """Hard limits the API enforces."""
 
     #: "The API accepts at most 255 options (2**8 - 1)".
     max_options: int = 255
@@ -36,7 +54,7 @@ class JevLimits:
 class QwenJevConfig:
     """Runtime configuration for :class:`qwenjev.engine.QwenJevLite`."""
 
-    model_path: str = DEFAULT_MODEL_PATH
+    model_path: str = field(default_factory=default_model_path)
     device: str = "cuda:0"
     dtype: str = "bfloat16"
     limits: JevLimits = field(default_factory=JevLimits)
@@ -44,17 +62,17 @@ class QwenJevConfig:
     #: Readout used to turn hidden states into probabilities.
     #: ``reserved_label`` = probability mass the LM head puts on reserved label tokens
     #: (works out of the box, K <= 26). ``slot_head`` = a dedicated K-slot linear head
-    #: (the essay's "final-position head", trained by RLCD). ``pointer`` = listwise
+    #: (a dedicated final-position head, trained by RLCD). ``pointer`` = listwise
     #: pointer scorer over per-option hidden states.
     readout: str = "reserved_label"
     #: Optional checkpoint produced by :mod:`qwenjev.rlcd`.
     readout_checkpoint: str | None = None
 
-    #: Share one state encoding across all branches of a request (essay section 2).
+    #: Share one state encoding across all branches of a request.
     share_state: bool = True
     #: Keep encoded states in an LRU so identical states are not re-encoded.
     state_cache_size: int = 4
-    #: Branches are evaluated in batches of this size (essay section 7).
+    #: Branches are evaluated in batches of this size.
     branch_batch_size: int = 64
     #: A batch also stops growing once ``branches x longest_branch`` exceeds this.
     max_batch_tokens: int = 8192

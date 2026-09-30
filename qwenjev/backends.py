@@ -59,7 +59,10 @@ class LayaBackend:
         "The claim at the start of `message` is true of the text that follows it."
     )
 
-    def __init__(self, model_path: str = r"C:\laya", device: str | None = None):
+    def __init__(self, model_path: str | None = None, device: str | None = None):
+        from .config import default_laya_path
+
+        model_path = model_path or default_laya_path()
         import laya
 
         self.model_path = model_path

@@ -1,6 +1,6 @@
 """Typed decision questions, mirroring the documented Jev request shape.
 
-The essay's example payload::
+The wire format for a request::
 
     {
         "state": "My payouts have failed three times. ...",
@@ -31,7 +31,7 @@ class QuestionType(str, Enum):
     SCORE = "score"
 
 
-#: Label tokens reserved for option slots. The essay notes the base model's tokenizer
+#: Label tokens reserved for option slots. The base model's tokenizer
 #: splits digits one at a time, so letters are the only stable single-token labels.
 SLOT_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -66,7 +66,7 @@ def option_ids(
 ) -> list[str]:
     """One stable id per allowed answer: its question, its label space, then its key.
 
-    The essay's readout is ``z = W h + b`` over the *K allowed answers* of one question.
+    The readout is ``z = W h + b`` over the *K allowed answers* of one question.
     Keying the rows by the question and the answer, rather than by their position in the
     row, is what lets one head serve every question without overwriting itself: every
     question owns a private block of rows, and *within* a block the row is chosen by the

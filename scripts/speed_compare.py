@@ -25,6 +25,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from qwenjev.config import QwenJevConfig, default_laya_path, default_model_path  # noqa: E402
+
 SENTENCE = (
     "The customer reports that the payout to their bank was rejected by the processor "
     "three times in a row, that the bank says the account is in good standing, and that "
@@ -49,8 +51,8 @@ def questions(count: int, options: int) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--model", default=r"C:\qwen3.5-4B")
-    parser.add_argument("--laya-path", default=r"C:\laya")
+    parser.add_argument("--model", default=None, help="backbone path (default $QWENJEV_MODEL)")
+    parser.add_argument("--laya-path", default=None, help="Laya checkpoint (default $QWENJEV_LAYA)")
     parser.add_argument("--checkpoint", default=str(ROOT / "models" / "qwenjev-multitask-v2"))
     parser.add_argument("--state-chars", nargs="*", type=int, default=[600, 6000])
     parser.add_argument("--questions", nargs="*", type=int, default=[1, 8, 64])
@@ -58,11 +60,12 @@ def main() -> int:
     parser.add_argument("--repeat", type=int, default=2)
     parser.add_argument("--skip-laya", action="store_true")
     args = parser.parse_args()
+    args.model = args.model or default_model_path()
+    args.laya_path = args.laya_path or default_laya_path()
 
     import torch
 
     from qwenjev.backends import LayaBackend, QwenBackend
-    from qwenjev.config import QwenJevConfig
     from qwenjev.engine import QwenJevLite
 
     checkpoint = Path(args.checkpoint)
