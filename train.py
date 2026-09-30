@@ -1,17 +1,29 @@
-"""Train one QwenJev-lite readout on every formatted train split.
+"""Train one QwenJev-lite decision head from a folder of formatted decision records.
 
-    python train.py                        # default settings, writes models/qwenjev-multitask-v2/
-    python train.py --epochs 2 --max-samples 12000
-    python train.py --tasks snli jigsaw    # only these tasks
+Four inputs are all you need - the backbone, the data, where to save the head, and the
+hyper-parameters - and every one of them has a default:
 
-The training data is the class-balanced mix of every ``data/ready/<task>_train.jsonl``
-(the formatted sets produced from ``data/raw`` and the query/document collections).
-The output folder gets ``readout.pt`` and ``card.json``.
+    # the whole thing, with the defaults (./qwen3.5-4B, data/ready, models/qwenjev-run-<stamp>)
+    python train.py --model /path/to/qwen3.5-4B
+
+    # an explicit run
+    python train.py \
+      --model /path/to/qwen3.5-4B \
+      --data-dir data/ready \
+      --model-dir models/my-run \
+      --epochs 1 --lr 1e-3 --batch-size 8 \
+      --items-per-label 12 --min-items-per-task 200 --prototype-init
+
+The data directory holds ``<task>_train.jsonl`` files (one JSON object per line, the
+engine's request shape plus ``targets``; see README, "Paths and data formats"). The output
+folder is created if needed and gets ``readout.pt`` + ``card.json``. ``--model-dir`` may
+be left empty, in which case a timestamped folder under ``models/`` is created.
 """
 
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import random
 import sys
@@ -91,7 +103,8 @@ def assemble(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data-dir", default="data/ready", help="folder with <task>_train.jsonl")
-    parser.add_argument("--model-dir", default="models/qwenjev-multitask-v2")
+    parser.add_argument("--model-dir", default="",
+                        help="where to write readout.pt + card.json; empty = models/qwenjev-run-<timestamp>")
     parser.add_argument("--model", default=None,
                         help="backbone checkpoint or Hub repo id "
                              "(default: $QWENJEV_MODEL, else ./qwen3.5-4B)")
@@ -129,21 +142,37 @@ def main() -> int:
                         help="start each row at the mean state of the answer (one forward pass)")
     parser.add_argument("--init-from", default=None,
                         help="start from an existing readout.pt (keeps its rows and table)")
-    parser.add_argument("--report", default="artifacts/train_multitask_v2.json")
+    parser.add_argument("--report", default="", help="optional extra copy of the card")
     parser.add_argument("--quiet", action="store_true", help="hide the progress bars")
     args = parser.parse_args()
     args.model = args.model or default_model_path()
+    if not args.model_dir:
+        stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+        args.model_dir = str(Path("models") / f"qwenjev-run-{stamp}")
+        print(f"no --model-dir given: writing the decision head to {args.model_dir}")
     progress = not args.quiet
 
     data_dir = Path(args.data_dir)
     if not data_dir.is_dir():
         print(f"no such data folder: {data_dir}", file=sys.stderr)
         return 2
+    if not any(data_dir.glob("*_train.jsonl")):
+        print(
+            f"{data_dir} has no <task>_train.jsonl; point --data-dir at a folder of formatted\n"
+            f"decision records (one JSON object per line) - see README, 'Paths and data formats'.",
+            file=sys.stderr,
+        )
+        return 2
     tasks = discover_tasks(data_dir, args.tasks, args.exclude)
     if not tasks:
         print(f"no *_train.jsonl found in {data_dir}", file=sys.stderr)
         return 2
     print(f"training tasks ({len(tasks)}): {', '.join(tasks)}")
+    print(f"backbone       : {args.model}")
+    print(f"data           : {data_dir}")
+    print(f"head goes to   : {args.model_dir}")
+    print(f"hyper-params   : epochs={args.epochs} lr={args.lr} batch={args.batch_size} "
+          f"objective={args.objective} optimizer={args.optimizer} anchor={args.anchor}")
 
     samples, per_task = assemble(
         data_dir,

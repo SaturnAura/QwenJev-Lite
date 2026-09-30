@@ -1,11 +1,25 @@
-"""Score every formatted test split with Laya and QwenJev-lite, side by side.
+"""Score a decision head over a folder of formatted test splits.
 
-    python test.py                                   # all variants, 40 items per task
-    python test.py --variants laya qwen_trained
-    python test.py --limit 0                         # whole test splits
+Four inputs are all you need - the backbone, the trained head, the data, and how much of
+it to score - and each has a default:
 
-Laya is used as shipped (no training). ``qwen_zeroshot`` is the pretrained readout;
-``qwen_trained`` loads ``<model-dir>/readout.pt`` produced by ``train.py``.
+    # the shipped head over the whole benchmark
+    python test.py --model /path/to/qwen3.5-4B --limit 0
+
+    # your own run
+    python test.py \
+      --model /path/to/qwen3.5-4B \
+      --data-dir data/ready \
+      --model-dir models/my-run \
+      --variants qwen_zeroshot qwen_trained \
+      --limit 0 --batch 16 \
+      --out artifacts/my-results.json
+
+``qwen_zeroshot`` is the untrained decision head (the pretrained label rows, no training);
+``qwen_trained`` loads ``<model-dir>/readout.pt`` produced by ``train.py``. Leaving
+``--model-dir`` empty uses the shipped head, or scores the untrained one only if that head
+is not on disk. ``--variants laya`` is available if an external Laya checkpoint is
+installed, and is not needed otherwise.
 """
 
 from __future__ import annotations
@@ -98,11 +112,13 @@ def build_variants(args):
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data-dir", default="data/ready")
-    parser.add_argument("--model-dir", default="models/qwenjev-multitask-v2")
+    parser.add_argument("--model-dir", default="",
+                        help="folder with the trained readout.pt; empty = the shipped head, "
+                             "or the untrained head only if that is missing")
     parser.add_argument("--model", default=None, help="backbone path or Hub repo id (default $QWENJEV_MODEL)")
     parser.add_argument("--laya-path", default=None, help="Laya checkpoint (default $QWENJEV_LAYA, else ./laya)")
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--variants", nargs="+", default=["laya", "qwen_zeroshot", "qwen_trained"],
+    parser.add_argument("--variants", nargs="+", default=["qwen_zeroshot", "qwen_trained"],
                         choices=["laya", "qwen_zeroshot", "qwen_trained"])
     parser.add_argument("--tasks", nargs="*", default=None)
     parser.add_argument("--limit", type=int, default=40, help="items per task (0 = all)")
@@ -114,13 +130,37 @@ def main() -> int:
     args = parser.parse_args()
     args.model = args.model or default_model_path()
     args.laya_path = args.laya_path or default_laya_path()
+    if not args.model_dir:
+        shipped = Path("models/qwenjev-multitask-v2/readout.pt")
+        if shipped.is_file():
+            args.model_dir = str(shipped.parent)
+            print(f"no --model-dir given: using the shipped head at {args.model_dir}")
+        else:
+            args.model_dir = ""
+            if "qwen_trained" in args.variants:
+                args.variants = [v for v in args.variants if v != "qwen_trained"]
+                print("no --model-dir given and no shipped head on disk: scoring the untrained head only")
     progress = not args.quiet
 
     data_dir = Path(args.data_dir)
+    if not data_dir.is_dir():
+        print(f"no such data folder: {data_dir}", file=sys.stderr)
+        return 2
+    if not any(data_dir.glob("*_test.jsonl")):
+        print(
+            f"{data_dir} has no <task>_test.jsonl; point --data-dir at a folder of formatted\n"
+            f"decision records (one JSON object per line) - see README, 'Paths and data formats'.",
+            file=sys.stderr,
+        )
+        return 2
     tasks = discover_tasks(data_dir, args.tasks)
     if not tasks:
         print(f"no *_test.jsonl found in {data_dir}", file=sys.stderr)
         return 2
+    print(f"backbone       : {args.model}")
+    print(f"data           : {data_dir}  ({len(tasks)} test splits)")
+    print(f"head           : {args.model_dir or '(none - untrained head only)'}")
+    print(f"variants       : {', '.join(args.variants)}   items/task: {args.limit or 'all'}   batch: {args.batch}")
     variants = build_variants(args)
     if not variants:
         print("no variant to run", file=sys.stderr)

@@ -1267,7 +1267,14 @@ def load_normalized(path: Path | str) -> list[DecisionItem]:
             line = line.strip()
             if not line:
                 continue
-            record = json.loads(line)
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"{path}: line {len(items) + 1} is not a complete JSON object ({exc.msg}). "
+                    "A formatted file is JSONL: exactly one record per line, with no "
+                    "pretty-printing (see README, 'Paths and data formats')."
+                ) from exc
             meta = dict(record.get("meta") or {})
             meta.setdefault("dataset", record.get("dataset"))
             meta.setdefault("split", record.get("split"))
