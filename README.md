@@ -30,14 +30,14 @@ python demo.py --checkpoint-dir models/qwenjev-multitask-v2
 
 The full evaluation is `python test.py --limit 0`, run over the 26 test splits (bool 7 + choice 12 + score 7) that both variants can answer. The values below are accuracy; raw data is in [`artifacts/results.json`](artifacts/results.json) and per-task detail in [`artifacts/RESULTS_CN.md`](artifacts/RESULTS_CN.md).
 
-| Question type / accuracy | pretrained readout (`qwen_zeroshot`) | **our trained model** |
-| --- | --- | --- |
-| judgement `bool` (7 tasks) | 0.717 | **0.794** |
-| choice `choice` (12 tasks) | 0.749 | **0.760** |
-| score `score` (7 tasks) | 0.681 | **0.771** |
-| **overall (26 tasks)** | 0.722 | **0.772** |
+| Question type / accuracy | Laya (reference) | pretrained readout (`qwen_zeroshot`) | **our trained model** |
+| --- | --- | --- | --- |
+| judgement `bool` (7 tasks) | 0.520 | 0.717 | **0.793** |
+| choice `choice` (12 tasks) | 0.511 | 0.749 | **0.760** |
+| score `score` (7 tasks) | 0.258 | 0.681 | **0.771** |
+| **overall (26 tasks)** | **0.446** | 0.722 | **0.772** |
 
-**For context only:** an external JEV-like baseline (Laya) scores **0.446** overall on the same 26 splits (0.520 / 0.511 / 0.258 per type). Nothing in this repository installs or runs it; `test.py` scores our own two heads by default, and the numbers are recorded here so the result can be read in context.
+The **Laya** column is an external JEV-like baseline, measured on the same 26 splits; it is kept here only so the result can be read in context. Nothing in this repository installs or runs it - `test.py` scores our own two variants by default, and `--variants laya` is there for anyone who already has that checkpoint.
 
 ## Quickstart
 

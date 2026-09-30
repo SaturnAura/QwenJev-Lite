@@ -59,7 +59,7 @@
     },
     "qwen_trained": {
       "bool": {
-        "accuracy": 0.7935,
+        "accuracy": 0.793,
         "ece": 0.1094,
         "n_tasks": 7
       },
