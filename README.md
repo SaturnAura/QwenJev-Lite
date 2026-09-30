@@ -1,8 +1,8 @@
 <div align="center">
 
-# QwenJev-Lite
+# QwenJev-lite
 
-**One shared state. Isolated question branches. Parallel probability readouts — no text is generated.**
+**A JEV-like model that uses RLCD on Qwen**
 
 ![python](https://img.shields.io/badge/python-3.11-3776ab?logo=python&logoColor=white)
 ![torch](https://img.shields.io/badge/torch-2.6.0%2Bcu126-ee4c2c?logo=pytorch&logoColor=white)
@@ -10,22 +10,15 @@
 ![tests](https://img.shields.io/badge/tests-92%20passing-2ea44f)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
-[Quickstart](#quickstart) · [Results](#results) · [Model](#the-model) · [How it works](#how-it-works) · [RLCD](#rlcd-in-one-page) · [vs. a BERT classifier](#compared-with-a-bert-base-classifier) · [Paths & formats](#paths-and-data-formats) · [Data](#data) · [Speed](#speed) · [References](#references)
+[Quickstart](#quickstart) · [Results](#results) · [The shipped model](#the-shipped-model) · [How it works](#how-it-works) · [RLCD in brief](#rlcd-in-brief) · [vs. BERT](#compared-with-a-bert-base-classifier) · [Adaptations & data](#what-we-adapted-in-the-model-and-the-data) · [Paths & formats](#paths-and-data-formats) · [Data](#data) · [Layout](#layout) · [References](#references) · [TODO](#todo)
 
 </div>
 
 > Chinese version: [`README_CN.md`](README_CN.md).
 
-QwenJev-lite turns a transformer into a **typed decision model**: the shared state is
-encoded once, every question becomes an isolated branch, and inference ends in a
-probability distribution over the allowed answers instead of generated text. Questions
-are typed — a finite `choice`, a `bool`, or an ordered `score` — and one request can mix
-them on the same state.
+QwenJev-lite formulates a transformer as a **typed decision model**: the shared state is encoded once, each question becomes an isolated branch, and inference returns a probability distribution over the allowed answers rather than generated text. Questions are typed — a finite `choice`, a `bool`, or an ordered `score` — and one request may cover several types on the same state.
 
-The backbone is **Qwen3.5-4B** (32 layers: 24 linear-attention + 8 full-attention, 4.54B
-parameters) and training only touches a **512-row readout** (≈5 MB), which is why a whole
-experiment fits on one 24 GB card. On 26 test splits it scores **0.772 overall** against
-**0.722** for the untrained readout and **0.446** for the Laya baseline.
+The backbone is **Qwen3.5-4B** (32 layers: 24 linear-attention + 8 full-attention, 4.54B parameters), and training **updates only a 512-row decision head at the output end** (≈5 MB), so a full experiment fits on a single 24 GB GPU. Across 26 test splits it reaches **0.772 overall**, against **0.722** for the Qwen baseline and **0.446** for the Laya baseline.
 
 ```bash
 pip install -r requirements.txt
@@ -33,51 +26,16 @@ export QWENJEV_MODEL=/path/to/qwen3.5-4B      # Windows: $env:QWENJEV_MODEL="D:\
 python demo.py --model-dir models/qwenjev-multitask-v2
 ```
 
-## Scope
-
-* **The backbone is swappable, multimodal included.** The engine asks the backbone for
-  exactly one thing — the hidden state at each decision position. Anything that produces
-  hidden states works: another causal LM, or a multimodal encoder, in which case the image
-  / audio tokens simply travel with the text inside `state` (or inside a branch's
-  `context`). The readout, the trainer, the evaluator and the HTTP surface do not change;
-  swapping is one `--model` (a local path or a Hub repo id) — see
-  [Paths & data formats](#paths-and-data-formats).
-* **Training touches the readout only.** The backbone stays frozen, so a full benchmark
-  run takes 14 minutes and the shipped artefact is 5 MB.
-* **Everything reported here is reproducible from this repository**: the model files, the
-  formatted data (`data/ready/`), the raw evaluation output (`artifacts/results.json`) and
-  the scripts that build both.
-
 ## Results
 
-One run of `python test.py --variants laya qwen_zeroshot qwen_trained --limit 0` over the
-26 test splits every variant can answer (bool 7 + choice 12 + score 7). Raw data in
-[`artifacts/results.json`](artifacts/results.json), full per-task detail in
-[`artifacts/RESULTS_CN.md`](artifacts/RESULTS_CN.md).
+The full evaluation command is `python test.py --variants laya qwen_zeroshot qwen_trained --limit 0`, run over the 26 test splits that all three variants can answer (bool 7 + choice 12 + score 7). The values below are accuracy; raw data is in [`artifacts/results.json`](artifacts/results.json) and per-task detail in [`artifacts/RESULTS_CN.md`](artifacts/RESULTS_CN.md).
 
-| Question type | Laya (baseline) | pretrained readout | **trained readout** |
-|---|---|---|---|
+| Question type / accuracy | Laya (baseline) | Qwen baseline | **our trained model** |
+| --- | --- | --- | --- |
 | judgement `bool` (7 tasks) | 0.520 | 0.717 | **0.794** |
 | choice `choice` (12 tasks) | 0.511 | 0.749 | **0.760** |
 | score `score` (7 tasks) | 0.258 | 0.681 | **0.771** |
 | **overall (26 tasks)** | **0.446** | 0.722 | **0.772** |
-
-Mean ECE (lower is better): Laya 0.289 / pretrained 0.158 / **trained 0.125**.
-
-**Label spaces wider than the 26 reserved rows** are listed separately, because the
-pretrained readout has no rows for them and cannot answer at all:
-
-| label space | trained readout | Laya | pretrained readout |
-|---|---|---|---|
-| CLINC150 (150 intents) | 0.527 | 0.545 | cannot answer |
-| HWU64 (64 intents) | 0.540 | 0.345 | cannot answer |
-
-Where the gain comes from, and where it does not: the trained readout leads by a wide
-margin on relevance judgements (`scifact_rel_choice` 1.000, `trec-covid_rel_choice`
-0.900, `arguana_rel_bool` 0.803) and turns "cannot answer" into 0.53–0.54 on the two wide
-intent spaces; it stays below the pretrained readout on the two 15-intent subsets
-(0.733 / 0.467) and on some closed-book style judgements — the direct cost of keeping the
-reserved rows for every label space they cover.
 
 ## Quickstart
 
@@ -91,231 +49,116 @@ python serve.py                                          # the same thing as a w
 pytest -q                                                # 92 tests on a tiny backbone, CPU only
 ```
 
-| I want to… | command |
-|---|---|
-| run the full benchmark (Laya + both readouts, progress bars) | `python test.py --variants laya qwen_zeroshot qwen_trained --limit 0` |
-| train my own readout | `python train.py --prototype-init --items-per-label 12 --min-items-per-task 200` |
-| rebuild the shipped head from its three sources | [`models/README.md`](models/README.md#rebuild-the-shipped-head) |
-| turn raw sources into the canonical format | `python -m qwenjev.cli normalize --src data/raw --out data/ready` |
-| serve `POST /v1/decide` | `python -m qwenjev.cli serve --port 8300` |
-| run the architecture probes (leakage, option interaction, latency…) | `python -m qwenjev.cli probe all` |
-| poke at the whole pipeline without a GPU | add `--fake` to any entry point (tiny random backbone, seconds) |
+| Goal | Command |
+| --- | --- |
+| Run the full benchmark (Laya + Qwen baseline + our model, progress bars) | `python test.py --variants laya qwen_zeroshot qwen_trained --limit 0` |
+| Train a custom decision head | `python train.py --prototype-init --items-per-label 12 --min-items-per-task 200` |
+| Rebuild the shipped decision head from its three sources | [`models/README.md`](models/README.md#rebuild-the-shipped-head) |
+| Convert raw sources into the canonical format | `python -m qwenjev.cli normalize --src data/raw --out data/ready` |
 
-## The model
+## The shipped model
 
-`models/qwenjev-multitask-v2/readout.pt` is the shipped readout: **512 rows = 27 reserved
-+ 485 private**, covering the 90 label spaces in `data/ready`.
-
-* rows 0–26 stay the **pretrained label rows**, so a question the head has never seen
-  still reads the backbone's own signal;
-* every label space seen during training gets its own private block — rows copied by
-  position for label spaces the reserved rows cover, and **closed-form prototype rows**
-  (the mean state of each answer, one forward pass, no gradient steps) for label spaces
-  wider than 26 options, where positional rows simply run out;
-* anything that misses both falls back to its reserved row.
-
-Four directories (`models/README.md` has the chain and load snippet; the three source
-files reproduce the shipped file **bit for bit**):
-
-| directory | rows | role |
-|---|---|---|
-| `qwenjev-multitask-v2/` | 512 | the shipped readout (`card.json` carries the benchmark) |
-| `shared-rows/` | 256 | the shared trained rows (α=0.5 blend) |
-| `raw-trained-rows/` | 256 | the α=1 trained rows, for re-sweeping α |
-| `prototype-rows/` | 1024 | closed-form rows for the wide label spaces |
+`models/qwenjev-multitask-v2/readout.pt` is the shipped decision head: **512 rows = 27 reserved + 485 private**, covering the 90 label spaces in `data/ready`.
 
 ## How it works
 
-| piece | where |
-|---|---|
-| readout at the end of inference: `z = W h + b`, softmax over the K allowed answers, no decode loop | [`qwenjev/readout.py`](qwenjev/readout.py) — `ReservedLabelReadout` / `SlotHeadReadout` / `PointerReadout` |
-| probability from the reserved label tokens of the pretrained head (K ≤ 26, zero training) | `ReservedLabelReadout` renormalises the LM head's mass over the option tokens |
-| typed questions: finite choices, yes/no, ordered scores | [`qwenjev/schema.py`](qwenjev/schema.py) |
-| encode the shared state once, isolate the branches | [`qwenjev/engine.py`](qwenjev/engine.py): one prefill into a KV/recurrent cache, expanded per branch, each branch seeing the state plus only its own suffix |
-| branch scheduling as a batch (size + token budget), one forward per batch | `_chunk_branches`; `share_state=False` is the reference path that re-encodes the state per branch, kept as a differential test |
-| request limits and billing shape (32,768 per branch, 65,536 per request, state counted once) | `JevLimits`, `check_limits`, `account` |
-| options are read as one ordered list inside the branch; the readout reads the decision position after it | [`qwenjev/prompt.py`](qwenjev/prompt.py), [`qwenjev/tokenize.py`](qwenjev/tokenize.py) |
-| RLCD: train the distribution from outcomes with a proper scoring rule (backbone frozen) | [`qwenjev/rlcd.py`](qwenjev/rlcd.py) |
-| calibration and confidence: reliability bins, ECE, Brier, Wilson intervals; `confidence` is arithmetic | [`qwenjev/calibration.py`](qwenjev/calibration.py), [`qwenjev/confidence.py`](qwenjev/confidence.py) |
-| two backends behind one interface (this engine / Laya), one evaluation code path | [`qwenjev/backends.py`](qwenjev/backends.py) |
+Inference performs no decoding: given the hidden state `h` at a branch's decision position, the decision head computes `z = W h + b` over the K allowed answers and applies a softmax, returning a probability distribution directly ([`qwenjev/readout.py`](qwenjev/readout.py) — `ReservedLabelReadout` / `SlotHeadReadout` / `PointerReadout`). `ReservedLabelReadout` renormalises the pretrained LM head's mass over the option-label tokens, so K ≤ 26 works without any training. Questions fall into three types — finite choices, yes/no, ordered scores ([`qwenjev/schema.py`](qwenjev/schema.py)) — and all options are placed into the branch as one ordered list, with the decision head reading the position *after* the list ([`qwenjev/prompt.py`](qwenjev/prompt.py), [`qwenjev/tokenize.py`](qwenjev/tokenize.py)). The shared state is encoded once into a KV/recurrent cache and then expanded per branch, each branch attending to that state plus only its own suffix ([`qwenjev/engine.py`](qwenjev/engine.py)); branches are packed into a single forward pass under a batch size and a token budget (`_chunk_branches`, where `share_state=False` is the reference path that re-encodes the state per branch, kept as a differential test), and are bounded by 32,768 tokens per branch and 65,536 per request with the state counted once (`JevLimits`, `check_limits`, `account`). Training uses RLCD: the backbone stays frozen and the distribution is fitted from outcomes with a proper scoring rule ([`qwenjev/rlcd.py`](qwenjev/rlcd.py)); calibration and confidence rely on reliability bins, ECE, Brier and Wilson intervals, with `confidence` kept arithmetic ([`qwenjev/calibration.py`](qwenjev/calibration.py), [`qwenjev/confidence.py`](qwenjev/confidence.py)). One evaluation code path drives both backends behind a single interface (this engine / Laya) ([`qwenjev/backends.py`](qwenjev/backends.py)).
 
-## RLCD in one page
+## RLCD in brief
 
-**RLCD** (Reinforcement Learning for Calibrated Decisions) trains the model **from
-outcomes instead of from a fixed label set**. The idea is one sentence: *a decision is a
-distribution over the answers the question allows, so train that distribution with a rule
-that is only minimised when the distribution is the truth.*
+**RLCD** (Reinforcement Learning for Calibrated Decisions) is built on one premise: **train from outcomes rather than from a fixed label set**. Its idea can be stated in one sentence: *a decision is a distribution over the answers the question allows, so it should be trained with an objective that is minimised only when the distribution is correct.*
 
-**The readout.** For a state `h ∈ R^d` (the hidden state at the decision position of a
-branch) and the `K` answers the question allows, the model produces one score per answer
-and normalises:
+**The decision head.** Given the hidden state `h ∈ R^d` at the decision position of a branch and the `K` answers the question allows, the model assigns each answer a score and normalises:
 
 ```
 z_k = w_k · h + b_k                     (k = 1 … K)
 p_k = softmax(z / τ)_k = exp(z_k/τ) / Σ_j exp(z_j/τ)
 ```
 
-`w_k` is a row of the readout — one row per *allowed answer*, not per position — and `τ`
-is a temperature (1.0 unless a calibration split fits something else).
+`w_k` is a row of the decision head — **one row per allowed answer, not per position** — and `τ` is a temperature (1.0 by default, changed only when fitted on an independent calibration split).
 
-**The objective.** Let `y` be the answer that actually happened. RLCD minimises a *proper
-scoring rule* of the predicted distribution:
+**The objective.** Let `y` be the answer that actually occurred. RLCD minimises a **proper scoring rule** of the predicted distribution:
 
 ```
 log loss :  L = −log p_y = −z_y/τ + log Σ_j exp(z_j/τ)
 Brier    :  L = Σ_k (p_k − 1{y = k})²
 ```
 
-Both are strictly proper: their expected value is minimised **exactly** when
-`p = P(y | state, question)`, so the trained numbers are probabilities and not just
-scores. The gradient is the intuitive one,
+Both are **strictly proper**: their minimum in expectation lies **exactly** at `p = P(y | state, question)`, so what is learned is the probability itself rather than merely a higher score. The gradient is equally direct:
 
 ```
 ∂L/∂z_k = p_k − 1{y = k}      (log loss, τ = 1)
 ```
 
-i.e. every observation pushes the answer that happened up and the others down in
-proportion to how much probability they claimed.
+That is, each sample pushes the row of the answer that occurred upward and pushes the remaining rows downward in proportion to their current probability.
 
-**Why "calibrated" is the point.** A classifier that only has to be argmax-correct can be
-arbitrarily over-confident; here over-confidence is paid for directly by the loss, and the
-result is checked with ECE. On the benchmark the trained readout reaches **0.125** mean ECE
-against 0.158 (untrained readout) and 0.289 (Laya), while *also* improving accuracy.
+**Why calibration matters.** A classifier judged only on argmax correctness may be arbitrarily over-confident; here over-confidence is penalised directly by the loss and examined with ECE — on the 26-task benchmark our trained model reaches a mean ECE of **0.125** against 0.158 (Qwen baseline) and 0.289 (Laya), while also achieving higher accuracy.
 
-**What makes it "reinforcement"-flavoured rather than plain supervised learning** is what
-it consumes and what it can learn: the supervision is a *decision plus its outcome*
-(`state → question → answer → happened`), the parameters being fitted are the answers'
-rows, and a label space that was never trained still has usable rows (the reserved ones),
-so the same objective extends a deployed model to new answer sets instead of requiring a
-new head. Our implementation is the **supervised form** of that objective — the backbone
-is frozen and the readout is fitted with log loss or Brier (`train.py --objective
-log_loss|brier`); the same loss works with backbone gradients if the memory is there.
+**Why it carries a reinforcement component.** The supervision is a decision plus its outcome (`state → question → answer → occurred`) and the fitted parameters are the rows corresponding to answers, while **label spaces never trained remain usable** (they read back the reserved rows). The same objective can therefore extend a deployed model to new answer sets without rebuilding a head for each label set. This repository implements the **supervised form** of that objective: the backbone is frozen and the decision head is fitted with log loss or Brier (`train.py --objective log_loss|brier`); the same loss can carry backbone gradients when memory permits.
 
-**Two structural details** that the measurements forced on us, both of which are part of
-the training recipe:
+**Two structural details obtained from experiments** (both part of the training recipe):
 
-* **one private row block per `(question, label space, answer)`.** With rows shared by
-  position, training a 2–4-option task overwrote the rows a 10–15-option task reads
-  (`clinc150_top15` 0.893 → 0.733 with the shared head, against 0.760 on the same task
-  now that the choices are separate). Answers the head never saw keep their pretrained
-  row, so an unseen label space keeps the zero-shot behaviour exactly.
-* **rows are held at the pretrained logit scale** (`‖w‖ ≈ 0.74`) after every step. The
-  decision states have norm ≈ 157, so without that projection a single step at lr 1e-3
-  moves a fresh row a fifth of its useful length and the logits explode (measured training
-  loss 33 against 5.01 for a uniform head). The shipped shared rows are additionally
-  blended halfway back to their initialisation (`W(0.5) = W₀ + 0.5·(W_trained − W₀)`) and
-  the label spaces wider than the reserved rows use the closed-form prototype rows
-  described above, because 150-way cross-entropy over ~20 samples per class does not move
-  in one epoch of gradient steps.
+- **A private row block per `(question, label space, answer)`.** When rows are shared by position, training a 2–4-option task overwrites rows read by a 10–15-option task (0.733 with the shared rows on the same task, versus 0.760 once the rows are private); answers that never occurred read back the pretrained rows, so an untrained label space **preserves zero-shot behaviour position by position**.
+- **Rows are projected back to the pretrained logit scale after every step** (`‖w‖ ≈ 0.74`). The decision states have norm ≈ 157, so without that projection a single step at lr 1e-3 moves a fresh row roughly a fifth of its useful length and the logits explode (measured training loss 33, against 5.01 for a uniform distribution); the shipped shared rows are additionally blended back by α=0.5 (`W(0.5) = W₀ + 0.5·(W_trained − W₀)`), and label spaces wider than the reserved rows use the closed-form prototype rows described above, because 150-way cross-entropy over roughly 20 samples per class does not converge within one epoch of gradient steps.
 
 ## Compared with a BERT-base classifier
 
-The usual way to turn a transformer into a classifier is "BERT-base + one linear head".
-This project makes different choices on purpose:
+The usual way to use a transformer as a classifier is "BERT-base + one linear head": an encoder of ~110M parameters over 12 layers that feeds only the pooled `[CLS]` state into a head whose class count is fixed when it is built, so a single forward pass answers exactly one question; every additional answer set requires a new head, a retrain and one checkpoint per task, and its softmax is typically over-confident and never evaluated, the sole advantage being a low cost per pass. QwenJev-lite instead uses a causal transformer (4.54B, 32 layers: 24 linear-attention + 8 full-attention): the state is encoded once, each question becomes an isolated branch completed within one batch, and the answer comes from the state at the branch's decision position together with `K` rows (one row per allowed answer, with `K` free to vary per request), so a single decision head covers any label space (reserved rows provide zero-shot ability, private rows cover trained label spaces) and one request may pose `choice` + `bool` + `score` questions about the same state. The cost profile differs as well: each state requires one prefill (a 4.54B model), after which every extra question on that state costs about 20 ms; and the distribution **itself** is the trained object, evaluated with ECE / Brier / NLL, with no generation at any point, the decision head replacing the decode loop. In short: a BERT classifier answers "which of my N classes does this belong to", with a head that must exist before training; QwenJev-lite answers "which of these K answers is it", where the answer set is part of the request, multiple questions on one state stay isolated, and the output is a **calibrated distribution** rather than a single argmax.
 
-| | BERT-base + linear head | **QwenJev-lite** |
-|---|---|---|
-| backbone | encoder, ~110M parameters, 12 layers | causal transformer, 4.54B, 32 layers (24 linear-attention + 8 full-attention) |
-| questions per forward pass | one — the `[CLS]` vector encodes exactly one question | many — the state is encoded once, each question is an isolated branch, all branches run as one batch |
-| where the answer comes from | the pooled `[CLS]` state → a head whose class count is fixed when it is built | the state at the decision position of the branch → `K` rows, one per allowed answer, and `K` can differ per request |
-| adding an answer set | new head, retrain, new checkpoint per task | the same head answers any label space: reserved rows zero-shot, private rows once trained |
-| mixing question types | one classifier per type, one pass per question | one request carries `choice` + `bool` + `score` questions about the same state |
-| uncertainty | a softmax that is typically over-confident and never scored | the distribution *is* the trained object, scored by ECE / Brier / NLL |
-| cost profile | cheap per pass, one question per pass | one prefill per state (a 4.54B model), then ≈20 ms per extra question on the same state |
-| generation | none (classification only) | none, by design — the readout replaces the decode loop |
+## What we adapted in the model and the data
 
-Short version: a BERT classifier answers *"which of my N classes?"* with a head that must
-exist before training; QwenJev-lite answers *"which of these K answers?"* for a question
-whose answers are part of the request, keeps many such questions isolated on one shared
-state, and reports a calibrated distribution instead of an argmax.
+**In the model.** We replaced the decode loop and the fixed classifier with a decision head — computing `z = W h + b` over the allowed answers and applying a softmax, generating no tokens, so latency does not grow with output length. Reserved label rows take priority: the Qwen baseline renormalises the pretrained head's mass over the option-label tokens, which works without training (K ≤ 26) and supplies our trained model with both its initialisation and its fallback for unseen answers. Shared prefill and branch isolation: the state is encoded once into a KV/recurrent cache, the cache is expanded per branch, and each branch attends only to the state and its own suffix, so isolation is structural rather than a prompting convention. Branch scheduling in batches: branches are packed into a single forward pass under a batch size and a token budget, so one request completes every question on a state in a few forward passes. Listwise option rendering: all options are placed into the branch as one ordered list and the decision head reads the position *after* the list, so an answer may depend on the whole candidate set rather than on each candidate in isolation. One wire format for typed questions: the trainer, the evaluator, the CLI, the HTTP API and both backends read the same record for `choice` / `bool` / `score`. One row per answer: the decision head's rows are determined by `(question id, label space, answer key)`, so the same options in a different order still read the same row and rows never mix across questions. The training recipe is a frozen backbone plus RLCD (log loss or Brier), rows projected back to the pretrained logit scale after every step, an α=0.5 blend for the shared rows, closed-form prototype rows for label spaces wider than the reserved budget, and an optional temperature fitted on a held-out split.
 
-## What we adapted in the structure
-
-1. **Readout instead of a decode loop or a fixed head.** `z = W h + b` over the allowed
-   answers, softmax, done — no tokens are generated, so latency does not grow with output
-   length.
-2. **Reserved label rows first.** The zero-shot readout renormalises the pretrained head's
-   mass on the option-label tokens, which gives a working model with no training at all
-   (K ≤ 26) and, more importantly, gives the trained head its initialisation and its
-   fallback for answers it has never seen.
-3. **Shared prefill + isolated branches.** The state is encoded once into a KV/recurrent
-   cache; the cache is expanded per branch; every branch attends to the state and its own
-   suffix only. Branch isolation is structural here, not a prompting convention.
-4. **Branch scheduling as a batch.** Branches are packed into forward passes under a batch
-   size and a token budget, so one request answers every question on a state in a handful
-   of passes.
-5. **Options are rendered listwise.** All options are printed into the branch as one
-   ordered list and the readout reads the position *after* the list, so the answer can
-   depend on the whole set of candidates rather than on each candidate in isolation.
-6. **Typed questions, one record shape.** `choice` / `bool` / `score` share one wire
-   format, and the trainer, the evaluator, the CLI, the HTTP API and both backends all
-   consume that same record.
-7. **One row block per answer, plus a documented fallback.** The readout's rows are keyed
-   by `(question id, label space, answer key)`, so two files that list the same options in
-   a different order still read the same row, and rows never mix across questions.
-8. **Training recipe.** Backbone frozen; RLCD with log loss or Brier; rows projected back
-   to the pretrained logit scale; the correction blended halfway for the shared rows;
-   closed-form prototype rows for label spaces wider than the reserved budget; an optional
-   temperature fitted on a held-out split.
-
-## How the data is organised
-
-* **One canonical record per dataset.** Every source is normalised into the engine's own
-  request shape — `{"state": …, "questions": {…}, "targets": {…}}`, one JSON per line —
-  so the same file feeds training, evaluation, the CLI and the HTTP API with no
-  per-dataset code path.
-* **Everything is a typed question.** A task becomes a `choice` (with `criteria`), a
-  `bool` (yes/no, `criteria` optional) or an ordered `score`; a boolean question carries
-  both an `instructions` phrasing and a `claim` phrasing because the two backends were
-  measured on different templates.
-* **The label space is data, not code.** The `criteria` keys are the answer identities;
-  the readout maps `(question id, label space, answer key)` to a row, which is why option
-  order does not matter and why several tasks can share one head without interfering.
-* **Split discipline.** Every training row is disjoint from the rows it is scored on; the
-  caps are spread evenly across a file rather than taken as a prefix; and the splits this
-  repository builds itself (`artifacts/extra_splits.json`) are checked before they are
-  written — if the test file reads an answer the training file never trains, the script
-  refuses to write it.
-* **Budgets per label space.** `--items-per-label` keeps a many-answer task (150 intents)
-  from being starved by a two-answer one, which is what flattened the choice family
-  before.
-* **Precision.** The backbone runs bf16; the readout stays float32 (a training step is
-  ~1e-3, below bf16's resolution at that magnitude), and the logits are computed in
-  float32.
+**In the data.** Each dataset corresponds to one canonical record: every source is normalised into the engine's own request shape (`{"state": …, "questions": {…}, "targets": {…}}`, one JSON per line), so the same file serves training, evaluation, the CLI and the HTTP API with no per-dataset code path. Everything is expressed as a typed question: a task is either a `choice` with `criteria`, a `bool` whose `criteria` is optional, or an ordered `score`; boolean questions supply both an `instructions` (question) phrasing and a `claim` (statement) phrasing, because the two backends were measured on different phrasings. The label space belongs to the data rather than the code: the `criteria` keys are the answer identities and the decision head maps `(question id, label space, answer key)` to a row, which is why option order does not affect the result and why several tasks can share one decision head without interfering. Split discipline: every training row is disjoint from the rows it is scored on, truncation samples uniformly across the whole file rather than taking a prefix, and the training splits this repository builds itself (`artifacts/extra_splits.json`) are validated before being written — if the test set reads an answer that was never trained, the script refuses to write. Budgets are allocated per label space: `--items-per-label` keeps a 150-way task from being crowded out by a two-answer one. Precision: the backbone runs in bf16 while the decision head stays in float32 (a training step is ~1e-3, below bf16's resolution at that magnitude), and the logits are computed in float32 as well.
 
 ## Paths and data formats
 
 Every path is configurable, and no absolute path is hard-coded anywhere:
 
 | path | flag | environment | default |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | backbone | `--model` | `QWENJEV_MODEL` | `./qwen3.5-4B` (or a Hub repo id) |
 | data directory | `--data-dir` | — | `data/ready` |
-| readout output | `--model-dir` / `--out` | — | `models/qwenjev-multitask-v2` |
+| decision-head output | `--model-dir` / `--out` | — | `models/qwenjev-multitask-v2` |
 | Laya baseline | `--laya-path` | `QWENJEV_LAYA` | `./laya` |
 
-A data directory holds two files per task, `<task>_train.jsonl` and `<task>_test.jsonl`
-(any `<task>_<split>.jsonl` works). Each line is one decision record — the engine's request
-shape plus the observed outcome:
+A data directory contains two files per task, `<task>_train.jsonl` and `<task>_test.jsonl` (any `<task>_<split>.jsonl` works), and each line is one **decision record** — the engine's request shape plus the observed outcome. One example is given below for each of the three question types.
+
+Choice (`choice`): settling the next day's plan in a group chat.
 
 ```json
-{"id": "mytask/test/0001", "dataset": "mytask", "split": "test",
- "state": "shared text: encoded once, then every question below reads it",
+{"id": "weekend/train/0001", "dataset": "weekend", "split": "train",
+ "state": "Friday night, three of us are pinning down tomorrow in the group chat: Zhe wants to hike, Yu wants a gallery, and I said either is fine.",
  "questions": {
-   "queue":  {"type": "choice", "instructions": "Which team should handle this ticket?",
-              "criteria": {"payments": "Payout failures", "account": "Login", "other": "Else"}},
-   "urgent": {"type": "bool", "instructions": "Does this need urgent attention?"},
-   "grade":  {"type": "score", "instructions": "How severe is it?",
-              "criteria": {"low": "Low", "mid": "Medium", "high": "High"}}},
- "targets": {"queue": "payments", "urgent": "no", "grade": "high"}}
+   "plan": {"type": "choice", "instructions": "What should we do tomorrow?",
+            "criteria": {"hike": "Hike", "museum": "Gallery", "home": "Stay in"}}},
+ "targets": {"plan": "museum"}}
 ```
 
-Rules that matter: each `targets` value must be one of that question's `criteria` keys;
-`choice` and `score` need `criteria` (ordered), `bool` may omit it (defaults to
-yes/no); the question id (`queue`, …) is just an identifier — what decides which rows the
-readout uses is `(question id, label space, answer key)`.
+Yes/no (`bool`): the takeout has arrived, judging whether this meal is heavy.
 
-**Train a readout** (another backbone, your own data, your own output directory):
+```json
+{"id": "takeout/train/0002", "dataset": "takeout", "split": "train",
+ "state": "Dinner just arrived: a spicy hotpot on one side, a plain noodle soup on the other. Yu's stomach has been off all week, but her chopsticks went for the hotpot first.",
+ "questions": {
+   "spicy": {"type": "bool", "instructions": "Is this bowl heavy for her right now?"}},
+ "targets": {"spicy": "yes"}}
+```
+
+Score (`score`): rating the film on the way out.
+
+```json
+{"id": "movie/train/0003", "dataset": "movie", "split": "train",
+ "state": "The credits roll: Zhe calls it the best film he has seen all year, Yu is yawning next to him, and I am stuck in the middle.",
+ "questions": {
+   "rating": {"type": "score", "instructions": "Was the film any good?",
+              "criteria": {"bad": "Bad", "ok": "Fine", "good": "Great"}}},
+ "targets": {"rating": "ok"}}
+```
+
+Rules to observe: each `targets` value must be one of that question's `criteria` keys; `choice` and `score` require `criteria` (ordered) while `bool` may omit it (defaulting to yes/no); the question id (`plan`, …) is only an identifier — what determines which row the decision head uses is `(question id, label space, answer key)`.
+
+**Train a custom decision head** (a different backbone, your own data, your own output directory):
 
 ```bash
 python train.py \
@@ -327,7 +170,7 @@ python train.py \
   --epochs 0                     # 0 = closed-form prototype rows only; use 1 + --lr for gradient steps
 ```
 
-**Evaluate** (drop `--variants laya` if Laya is not installed):
+**Evaluate** (omit `--variants laya` when Laya is not installed):
 
 ```bash
 python test.py \
@@ -339,7 +182,7 @@ python test.py \
   --out artifacts/my-results.json
 ```
 
-**One request, in Python**:
+**A single request**:
 
 ```python
 from qwenjev.config import QwenJevConfig
@@ -359,13 +202,11 @@ print(engine.decide("My payouts have failed three times.", {
 
 ## Data
 
-`data/ready/` ships with the repository (≈92 MB of JSONL): the formatted train/test sets
-plus `manifest.json`, which records the source file, the row counts and the caveats of
-every split. The sources behind them:
+`data/ready/` ships with the repository (≈92 MB of JSONL): the formatted train/test sets together with `manifest.json`, which records the source file, row counts and caveats of every split. The sources used are:
 
 | source | which tasks |
-|---|---|
-| MultiNLI / SNLI | `mnli`, `mnli_ood`, `snli` (one premise, several hypotheses per state) |
+| --- | --- |
+| MultiNLI / SNLI | `mnli`, `mnli_ood`, `snli` (one premise with several hypotheses) |
 | Jigsaw Toxic Comment | `jigsaw` (six independent yes/no labels), `jigsaw_severity` (ordered) |
 | GoEmotions | `goemotions` (28 yes/no emotions), `goemotions_sentiment` (ordered) |
 | TruthfulQA | `truthfulqa` (5-way) |
@@ -373,47 +214,7 @@ every split. The sources behind them:
 | CLINC150 / HWU64 | `clinc150`, `clinc150_top15`, `hwu64`, `hwu64_top15` |
 | BEIR (arguana / nfcorpus / scidocs / scifact / trec-covid) | 15 relevance-judgement tasks built from each collection's queries and qrels: the labelled document becomes the positive option, non-qrels the negatives; splits are by query |
 
-`artifacts/extra_splits.json` records the training splits this repository builds itself
-(source, row counts, and the check that every answer the test file reads is trained), and
-`data/ready/manifest.json` records the provenance of every other split. Thanks are due to
-the authors and maintainers of these datasets, annotations and tooling — the citation
-list is in [References](#references).
-
-## Speed
-
-**Every number below is the pure-torch fallback.** This machine has no Triton and no CUDA
-toolkit, so `flash-linear-attention` and `causal-conv1d` are **not installed**: the 24
-linear-attention layers run the torch implementation (`torch 2.6.0+cu126`,
-`transformers 5.14`, RTX 3090 / SM86; the 8 full-attention layers already run on SDPA).
-**No flash-attention number is claimed anywhere in this repository** - the kernels could
-not be installed here, and we would rather report the slow path explicitly than quote a
-number we did not measure.
-
-Units matter, so both are spelled out: Laya answers **one question per call** and
-re-encodes the state for each one; this engine answers **every question about one state in
-one call** (a shared prefill, then the branches), so its per-call cost barely moves with
-the number of questions.
-
-| work | ours (torch fallback) | Laya |
-|---|---|---|
-| the 26-task benchmark, 16 items per call | 2.5 s/call (≈68 decisions) → **36.7 ms/decision** | 23 ms/call → **23.4 ms/decision** |
-| 1 question, 15 options, short state | 94 ms | ~25 ms |
-| one state, 1 / 8 / 64 questions | 297 / 283 / 1511 ms **per call** | 23 / 193 / 1496 ms per call |
-| the same with a 6,000-character state | 461 / 297 / 1655 ms per call | 26 / 191 / 1621 ms per call |
-
-Read the last two rows as cost *per call*: ours is flat (the state is prefilled once and
-each extra question costs ≈20 ms), Laya's is linear, so the wall clock meets at roughly 64
-questions on one state and stays with us after that; per *decision* we are 1.0–1.6×
-slower on this fallback path.
-
-The fused kernels are what the fused linear-attention path needs, and the
-"1,500 questions in a few hundred ms" regime belongs to them - so with those kernels the
-numbers above would improve, and we do not quote an estimate for it. Why they are missing
-here: `causal-conv1d` has no Windows wheel and building it needs `nvcc`, and
-`flash-linear-attention` needs Triton (which `torch.compile` needs as well, so that path
-is closed too). On Linux, `pip install flash-linear-attention causal-conv1d` enables the
-fast path; `scripts/speed_compare.py` reproduces the table above for any state length and
-question count, so the same script measures the fast path once it exists.
+`artifacts/extra_splits.json` records the training splits this repository builds itself (source, row counts, and the check that every answer the test file reads is trained), and `data/ready/manifest.json` records the provenance of every other split. The authors and maintainers of these datasets, annotations and tools made this work possible, and are gratefully acknowledged — the citation list appears at the end of this document.
 
 ## Layout
 
@@ -421,13 +222,13 @@ question count, so the same script measures the fast path once it exists.
 qwenjev/           the library: schema / prompt / tokenize / readout / engine / rlcd /
                    calibration / datasets / normalize / relevance / backends / benchmark /
                    probes / api / cli
-train.py           train one readout over the train splits of a data directory (progress bar)
-test.py            score Laya + both readouts over the test splits (progress bar)
+train.py           train one decision head over the train splits of a data directory (progress bar)
+test.py            score Laya + the Qwen baseline and our model over the test splits (progress bar)
 demo.py serve.py   user-facing CLI demo and web demo
 scripts/           build_extra_splits / compose_wide_rows / interpolate / dev_score /
                    map_labels / compare_results / speed_compare / split_csv (and a few
                    converters for rebuilding the canonical files from other mirrors)
-models/            the shipped readout + the three heads it is composed from
+models/            the shipped decision head + the three heads it is composed from
 data/ready/        formatted train/test JSONL + manifest.json (in git, ≈92 MB)
 data/raw/          the source datasets as provided (git-ignored)
 artifacts/         RESULTS_CN.md (final numbers), results.json (raw evaluation),
@@ -439,3 +240,10 @@ tests/             92 tests + the mini fixtures the dataset adapters are tested 
 
 <!-- To be filled in by the author: the works, models, datasets and tools this project
      builds on and thanks. -->
+
+## TODO
+
+The following work remains outstanding in this version:
+
+- TODO: **Support swapping the backbone, including multimodal backbones.** The engine requests exactly one item from the backbone — the hidden state at each decision position — so any model that produces hidden states can serve as the backbone. Swapping in another causal LM, or a multimodal encoder (image / audio tokens placed alongside the text inside `state`, or inside a branch's `context`), requires no change to the decision head, the trainer, the evaluator or the HTTP surface, and is performed solely through `--model` (a local path or a Hub repo id); see [Paths & data formats](#paths-and-data-formats).
+- TODO: **Accelerate inference with flash attention and related methods.** On the pure-torch fallback path, throughput does not yet exceed the Laya baseline: per decision, this engine takes roughly 1.0–1.6× the time of Laya, and it leads on wall-clock only once a single state carries more than about 64 questions. We are introducing fused kernels such as `flash-linear-attention` and `causal-conv1d` to enable the fast path for linear attention, with the goal of bringing per-call latency below Laya for long sequences with many questions; `scripts/speed_compare.py` measures that path.
